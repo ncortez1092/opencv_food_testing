@@ -1,0 +1,231 @@
+/* We attempImgt to do several things in this code. In the end, we want to be tracking a piece of food in the pot and relaying the (x,y) coordinates to the robot.
+Steps:
+1. Find the HSV values of each of the pieces of food in there
+	1. We can use Auto Filtering to find the value of each piece
+2. Assign each HSV value to a food class of each one
+	1 Use a class header file to store all of this
+3. Track each piece of food and ensure movement
+4. Use no-color movement tracking to ensure movement of the food at all times
+5. Relay the (x,y) coordinates of each piece of food to the robot whenever called upon
+	1. We will need to transform coordinates from the image to the robot somehow
+
+*/
+#include <sstream>
+#include <string>
+#include <iostream>
+#include "Food.h"
+#include "Food.cpp"
+
+using namespace std;
+using namespace cv;
+
+// Initialize values used throughout the program
+
+//These are used for HSV detection, and will be used on our trackbars
+int Hmin = 0;
+int Hmax = 256;
+int Smin = 0;
+int Smax = 256;
+int Vmin = 0;
+int Vmax = 256;
+
+// Size of the webcam feed
+const int FRAME_WIDTH = 640;
+const int FRAME_HEIGHT = 480;
+
+// Other obvious declarations
+const int MAX_NUM_OBJECTS = 50; // Max number of objects
+const int MIN_OBJECT_AREA = 20*20; // Min area of an object we will bother detecting
+const int MAX_OBJECT_AREA = (FRAME_HEIGHT*FRAME_WIDTH) / 1.5; // Max area of an object we will detect
+
+// Window names for our program
+const string windowName1 = "Original";
+const string windowName2 = "HSV image";
+const string windowName3 = "Thresholded Image";
+const string windowName4 = "Morphological Operations";
+const string windowName5 = "Controls";
+
+/*
+bool calibrationMode;
+bool mouseIsDragging;
+bool mouseMove;
+bool rectangleSelected;
+Point initialclickPoint, currentMousePoint;
+Rect rectangleROI;
+vector<int> H_ROI, S_ROI, V_ROI; */ // This is all used for dragging HSV detection, will implement later
+
+// Function Prototypes
+
+void on_trackbar(int, void*){}
+string intToString(int);
+void createTrackBars();
+void drawObject(vector<Food>, Mat &);
+void morphOps(Mat&);
+void trackingObject(int&,int&,Mat,Mat&);
+
+
+
+int main()
+{
+	Food broccoli("broccoli");
+	return 0;
+}
+
+string intToString(int number){
+	stringstream s;
+	s << number;
+	return s.str();
+}
+void createTrackBars(){
+
+	namedWindow(windowName5,0);
+
+	char TrackbarName[50]; // Create memory
+	sprintf(TrackbarName, "Hmin", Hmin);
+	sprintf(TrackbarName, "Hmax", Hmax);
+	sprintf(TrackbarName, "Smin", Smin); 
+	sprintf(TrackbarName, "Smax", Smax); 
+	sprintf(TrackbarName, "Vmin", Vmin);
+	sprintf(TrackbarName, "Vmax", Vmax);
+	//create trackbars and insert them into window
+	//3 parameters are: the address of the variable that is changing when the trackbar is moved(eg.H_LOW),
+	//the max value the trackbar can move (eg. H_HIGH), 
+	//and the function that is called whenever the trackbar is moved(eg. on_trackbar)
+	//                                  ---->    ---->     ---->      
+	createTrackbar("Hmin", windowName5, &Hmin, 255, on_trackbar);
+	createTrackbar("Hmax", windowName5, &Hmax, 255, on_trackbar);
+	createTrackbar("Smin", windowName5, &Smin, 255, on_trackbar);
+	createTrackbar("Smax", windowName5, &Smax, 255, on_trackbar);
+	createTrackbar("Vmin", windowName5, &Vmin, 255, on_trackbar);
+	createTrackbar("Vmax", windowName5, &Vmax, 255, on_trackbar);
+}
+void drawObject(vector<Food> Foods, Mat &frame){
+
+	for(int i=0; i < Foods.size(); i++)
+	{
+
+	cv::circle(frame,cv::Point(Foods.at(i).getXPos(),Foods.at(i).getYPos()),10,cv::Scalar(0,0,255));
+	cv::putText(frame,intToString(Foods.at(i).getXPos())+ " , " + intToString(Foods.at(i).getYPos()),cv::Point(Foods.at(i).getXPos(),Foods.at(i).getYPos()+20),1,1,Scalar(0,255,0));
+	cv::putText(frame,Foods.at(i).getType(),cv::Point(Foods.at(i).getXPos(),Foods.at(i).getYPos()-30),1,2,Foods.at(i).getColor());
+	}
+
+
+}
+void morphOps(Mat& threshold){
+
+	// This will dilate then erode the image as to eliminate noise
+
+	Mat Ele_erode = getStructuringElement( MORPH_RECT,Size(3,3));
+	Mat Ele_dilate = getStructuringElement( MORPH_RECT,Size(8,8));
+
+	erode(threshold,threshold,Ele_erode);
+	erode(threshold,threshold,Ele_erode);
+
+
+	dilate(threshold,threshold,Ele_dilate);
+	dilate(threshold,threshold,Ele_dilate);
+}
+
+void trackingObject(Mat threshold,Mat HSV, Mat &cameraFeed){
+
+	vector<Food> Ingredients;
+
+	Mat tempImg;
+	threshold.copyTo(tempImg);
+	//these two vectors needed for output of findContours
+	vector< vector<Point> > contours;
+	vector<Vec4i> hierarchy;
+	//find contours of filtered image using openCV findContours function
+	findContours(tempImg,contours,hierarchy,CV_RETR_CCOMP,CV_CHAIN_APPROX_SIMPLE );
+	//use moments method to find our filtered object
+	double refArea = 0;
+	bool objectFound = false;
+	if (hierarchy.size() > 0) {
+		int num_of_Objects = hierarchy.size();
+		//if number of objects greater than MAX_NUM_OBJECTS we have a noisy filter
+		if(num_of_Objects<MAX_NUM_OBJECTS){
+			for (int index = 0; index >= 0; index = hierarchy[index][0]) {
+
+				Moments moment = moments((cv::Mat)contours[index]);
+				double area = moment.m00;
+
+				//if the area is less than 20 px by 20px then it is probably just noise
+				//if the area is the same as the 3/2 of the image size, probably just a bad filter
+				//we only want the object with the largest area so we safe a reference area each
+				//iteration and compare it to the area in the next iteration.
+				if(area>MIN_OBJECT_AREA){
+
+					Food broccoli;
+
+					broccoli.setXPos(moment.m10/area);	
+					broccoli.setYPos(moment.m01/area);
+				
+					Ingredients.push_back(broccoli);
+
+					objectFound = true;
+
+				}else objectFound = false;
+
+
+			}
+			//let user know you found an object
+			if(objectFound ==true){
+				//draw object location on screen
+				drawObject(Ingredients,cameraFeed);}
+
+		}else putText(cameraFeed,"TOO MUCH NOISE! ADJUST FILTER",Point(0,50),1,2,Scalar(0,0,255),2);
+	}
+}
+
+void trackingObject(Food Foods, Mat threshold,Mat HSV, Mat &cameraFeed){
+
+	vector<Food> Ingredients;
+
+	Mat tempImg;
+	threshold.copyTo(tempImg);
+	//these two vectors needed for output of findContours
+	vector< vector<Point> > contours;
+	vector<Vec4i> hierarchy;
+	//find contours of filtered image using openCV findContours function
+	findContours(tempImg,contours,hierarchy,CV_RETR_CCOMP,CV_CHAIN_APPROX_SIMPLE );
+	//use moments method to find our filtered object
+	double refArea = 0;
+	bool objectFound = false;
+	if (hierarchy.size() > 0) {
+		int num_of_Objects = hierarchy.size();
+		//if number of objects greater than MAX_NUM_OBJECTS we have a noisy filter
+		if(num_of_Objects<MAX_NUM_OBJECTS){
+			for (int index = 0; index >= 0; index = hierarchy[index][0]) {
+
+				Moments moment = moments((cv::Mat)contours[index]);
+				double area = moment.m00;
+
+				//if the area is less than 20 px by 20px then it is probably just noise
+				//if the area is the same as the 3/2 of the image size, probably just a bad filter
+				//we only want the object with the largest area so we safe a reference area each
+				//iteration and compare it to the area in the next iteration.
+				if(area>MIN_OBJECT_AREA){
+
+					Food broccoli;
+
+					broccoli.setXPos(moment.m10/area);	
+					broccoli.setYPos(moment.m01/area);
+					broccoli.setType(Foods.getType());
+					broccoli.setColor(Foods.getColor());
+				
+					Ingredients.push_back(broccoli);
+
+					objectFound = true;
+
+				}else objectFound = false;
+
+
+			}
+			//let user know you found an object
+			if(objectFound ==true){
+				//draw object location on screen
+				drawObject(Ingredients,cameraFeed);}
+
+		}else putText(cameraFeed,"TOO MUCH NOISE! ADJUST FILTER",Point(0,50),1,2,Scalar(0,0,255),2);
+	}
+}
