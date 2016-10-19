@@ -1,0 +1,1 @@
+/home/ncortez/Documents/Sereneti/opencvtesting/CMakeFiles/Test.dir
