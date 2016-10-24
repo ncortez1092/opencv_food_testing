@@ -172,7 +172,7 @@ int main(int argc, char* argv[])
 {
 
 //if we would like to calibrate our filter values, set to true.
-	bool doCalibrate = false;
+	bool doCalibrate = true;
 	
 	//Matrix to store each frame of the webcam feed
 	Mat liveFeed;

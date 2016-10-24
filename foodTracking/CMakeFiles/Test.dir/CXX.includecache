@@ -6,19 +6,19 @@
 
 #IncludeRegexTransform: 
 
-/home/ncortez/Documents/Sereneti/opencvtesting/foodTracking/Food.cpp
+/home/ncortez/Desktop/opencv_food_testing/foodTracking/Food.cpp
 Food.h
-/home/ncortez/Documents/Sereneti/opencvtesting/foodTracking/Food.h
+/home/ncortez/Desktop/opencv_food_testing/foodTracking/Food.h
 
-/home/ncortez/Documents/Sereneti/opencvtesting/foodTracking/Food.h
+/home/ncortez/Desktop/opencv_food_testing/foodTracking/Food.h
 string
 -
 opencv2/opencv.hpp
-/home/ncortez/Documents/Sereneti/opencvtesting/foodTracking/opencv2/opencv.hpp
+/home/ncortez/Desktop/opencv_food_testing/foodTracking/opencv2/opencv.hpp
 opencv2/highgui.hpp
-/home/ncortez/Documents/Sereneti/opencvtesting/foodTracking/opencv2/highgui.hpp
+/home/ncortez/Desktop/opencv_food_testing/foodTracking/opencv2/highgui.hpp
 
-/home/ncortez/Documents/Sereneti/opencvtesting/foodTracking/foodTracking.cpp
+/home/ncortez/Desktop/opencv_food_testing/foodTracking/foodTracking.cpp
 sstream
 -
 string
@@ -26,9 +26,9 @@ string
 iostream
 -
 Food.h
-/home/ncortez/Documents/Sereneti/opencvtesting/foodTracking/Food.h
+/home/ncortez/Desktop/opencv_food_testing/foodTracking/Food.h
 Food.cpp
-/home/ncortez/Documents/Sereneti/opencvtesting/foodTracking/Food.cpp
+/home/ncortez/Desktop/opencv_food_testing/foodTracking/Food.cpp
 
 /usr/local/include/opencv/cxcore.h
 opencv2/core/core_c.h

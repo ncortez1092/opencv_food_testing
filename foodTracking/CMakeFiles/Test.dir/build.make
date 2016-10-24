@@ -35,10 +35,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/ncortez/Documents/Sereneti/opencvtesting/foodTracking
+CMAKE_SOURCE_DIR = /home/ncortez/Desktop/opencv_food_testing/foodTracking
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/ncortez/Documents/Sereneti/opencvtesting/foodTracking
+CMAKE_BINARY_DIR = /home/ncortez/Desktop/opencv_food_testing/foodTracking
 
 # Include any dependencies generated for this target.
 include CMakeFiles/Test.dir/depend.make
@@ -51,17 +51,17 @@ include CMakeFiles/Test.dir/flags.make
 
 CMakeFiles/Test.dir/foodTracking.cpp.o: CMakeFiles/Test.dir/flags.make
 CMakeFiles/Test.dir/foodTracking.cpp.o: foodTracking.cpp
-	$(CMAKE_COMMAND) -E cmake_progress_report /home/ncortez/Documents/Sereneti/opencvtesting/foodTracking/CMakeFiles $(CMAKE_PROGRESS_1)
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/ncortez/Desktop/opencv_food_testing/foodTracking/CMakeFiles $(CMAKE_PROGRESS_1)
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object CMakeFiles/Test.dir/foodTracking.cpp.o"
-	/usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/Test.dir/foodTracking.cpp.o -c /home/ncortez/Documents/Sereneti/opencvtesting/foodTracking/foodTracking.cpp
+	/usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/Test.dir/foodTracking.cpp.o -c /home/ncortez/Desktop/opencv_food_testing/foodTracking/foodTracking.cpp
 
 CMakeFiles/Test.dir/foodTracking.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/Test.dir/foodTracking.cpp.i"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /home/ncortez/Documents/Sereneti/opencvtesting/foodTracking/foodTracking.cpp > CMakeFiles/Test.dir/foodTracking.cpp.i
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /home/ncortez/Desktop/opencv_food_testing/foodTracking/foodTracking.cpp > CMakeFiles/Test.dir/foodTracking.cpp.i
 
 CMakeFiles/Test.dir/foodTracking.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/Test.dir/foodTracking.cpp.s"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /home/ncortez/Documents/Sereneti/opencvtesting/foodTracking/foodTracking.cpp -o CMakeFiles/Test.dir/foodTracking.cpp.s
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /home/ncortez/Desktop/opencv_food_testing/foodTracking/foodTracking.cpp -o CMakeFiles/Test.dir/foodTracking.cpp.s
 
 CMakeFiles/Test.dir/foodTracking.cpp.o.requires:
 .PHONY : CMakeFiles/Test.dir/foodTracking.cpp.o.requires
@@ -122,6 +122,6 @@ CMakeFiles/Test.dir/clean:
 .PHONY : CMakeFiles/Test.dir/clean
 
 CMakeFiles/Test.dir/depend:
-	cd /home/ncortez/Documents/Sereneti/opencvtesting/foodTracking && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/ncortez/Documents/Sereneti/opencvtesting/foodTracking /home/ncortez/Documents/Sereneti/opencvtesting/foodTracking /home/ncortez/Documents/Sereneti/opencvtesting/foodTracking /home/ncortez/Documents/Sereneti/opencvtesting/foodTracking /home/ncortez/Documents/Sereneti/opencvtesting/foodTracking/CMakeFiles/Test.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/ncortez/Desktop/opencv_food_testing/foodTracking && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/ncortez/Desktop/opencv_food_testing/foodTracking /home/ncortez/Desktop/opencv_food_testing/foodTracking /home/ncortez/Desktop/opencv_food_testing/foodTracking /home/ncortez/Desktop/opencv_food_testing/foodTracking /home/ncortez/Desktop/opencv_food_testing/foodTracking/CMakeFiles/Test.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/Test.dir/depend
 
