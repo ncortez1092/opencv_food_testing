@@ -19,6 +19,18 @@ opencv2/highgui.hpp
 /home/ncortez/Desktop/opencv_food_testing/foodTracking/opencv2/highgui.hpp
 
 /home/ncortez/Desktop/opencv_food_testing/foodTracking/foodTracking.cpp
+stdlib.h
+-
+stdio.h
+-
+string.h
+-
+termios.h
+-
+unistd.h
+-
+fcntl.h
+-
 sstream
 -
 string

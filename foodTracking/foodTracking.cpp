@@ -1,7 +1,7 @@
 /* We attempImgt to do several things in this code. In the end, we want to be tracking a piece of food in the pot and relaying the (x,y) coordinates to the robot.
 Steps:
 1. Find the HSV values of each of the pieces of food in there
-	1. We can use Auto Filtering to find the value of each piece
+	1. We can use Auto Filtering to find the value of each piece (later)
 2. Assign each HSV value to a food class of each one
 	1 Use a class header file to store all of this
 3. Track each piece of food and ensure movement
@@ -10,6 +10,17 @@ Steps:
 	1. We will need to transform coordinates from the image to the robot somehow
 
 */
+
+// The below includes are for server stuff
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <termios.h>
+#include <unistd.h>
+#include <fcntl.h>
+
+
+// The below includes are normal includes plus one for our Food class
 #include <sstream>
 #include <string>
 #include <iostream>
@@ -20,6 +31,8 @@ using namespace std;
 using namespace cv;
 
 // Initialize values used throughout the program
+
+static const char* portName = "/dev/ttyACM0"; // This is used for accessing our port connected to gantry
 
 //These are used for HSV detection, and will be used on our trackbars
 int Hmin = 0;
@@ -45,6 +58,10 @@ const string windowName3 = "Thresholded Image";
 const string windowName4 = "Morphological Operations";
 const string windowName5 = "Controls";
 
+// All classes ( foods )
+Food lemon("lemon");
+
+
 /*
 bool doCalibrate;
 bool mouseIsDragging;
@@ -62,7 +79,7 @@ void createTrackbars();
 void drawObject(vector<Food>, Mat &);
 void morphOps(Mat&);
 
-
+// TODO: find a way to put int main in front of these and make it work through the function overloads
 void trackingObject(Mat threshold,Mat HSV, Mat &liveFeed){
 
 	vector<Food> Ingredients;
@@ -143,8 +160,6 @@ void trackingObject(Food Foods, Mat threshold,Mat HSV, Mat &liveFeed){
 				//iteration and compare it to the area in the next iteration.
 				if(area>MIN_OBJECT_AREA){
 
-					Food lemon;
-
 					lemon.setXPos(moment.m10/area);	
 					lemon.setYPos(moment.m01/area);
 					lemon.setType(Foods.getType());
@@ -155,13 +170,18 @@ void trackingObject(Food Foods, Mat threshold,Mat HSV, Mat &liveFeed){
 					objectFound = true;
 
 				}else objectFound = false;
+				if(objectFound ==true){
+					//draw object location on screen
+					drawObject(Ingredients,liveFeed);
+					lemon.setXPos(moment.m10/area);	
+					lemon.setYPos(moment.m01/area);
+					lemon.setType(Foods.getType());
+					lemon.setColor(Foods.getColor());}
 
 
 			}
 			//let user know you found an object
-			if(objectFound ==true){
-				//draw object location on screen
-				drawObject(Ingredients,liveFeed);}
+
 
 		}else putText(liveFeed,"TOO MUCH NOISE! ADJUST FILTER",Point(0,50),1,2,Scalar(0,0,255),2);
 	}
@@ -171,10 +191,33 @@ void trackingObject(Food Foods, Mat threshold,Mat HSV, Mat &liveFeed){
 int main(int argc, char* argv[])
 {
 
-//if we would like to calibrate our filter values, set to true.
-	bool doCalibrate = true;
+	// All the stuff below is for server stuff
+	int serialPort;
+	struct termios portOptions;
+	serialPort = open(portName, O_RDWR | O_NOCTTY | O_NDELAY);
+	tcgetattr(serialPort, &portOptions);
+	tcflush(serialPort, TCIOFLUSH);
+	cfsetispeed(&portOptions, B115200);
+	cfsetospeed(&portOptions, B115200);
+ 	// c_cflag contains a few important things- CLOCAL and CREAD, to prevent
+ 	//   this program from "owning" the port and to enable receipt of data.
+ 	//   Also, it holds the settings for number of data bits, parity, stop bits,
+	//   and hardware flow control. 
+	portOptions.c_cflag |= CLOCAL;
+	portOptions.c_cflag |= CREAD;
+	// Set up the frame information.
+	portOptions.c_cflag &= ~CSIZE; // clear frame size info
+	portOptions.c_cflag |= CS8;    // 8 bit frames
+	portOptions.c_cflag &= ~PARENB;// no parity
+	portOptions.c_cflag &= ~CSTOPB;// one stop bit
+
+ 	tcsetattr(serialPort, TCSANOW, &portOptions);
+  	tcflush(serialPort, TCIOFLUSH);
+
+	// If we would like to calibrate our filter values, set to true.
+	bool doCalibrate = false;
 	
-	//Matrix to store each frame of the webcam feed
+	// Matrix to store each frame of the webcam feed
 	Mat liveFeed;
 	Mat threshold;
 	Mat HSV;
@@ -194,6 +237,7 @@ int main(int argc, char* argv[])
 	capture.set(CV_CAP_PROP_FRAME_HEIGHT,FRAME_HEIGHT);
 	//start an infinite loop where webcam feed is copied to liveFeed matrix
 	//all of our operations will be performed within this loop
+	int counter = 0;
 	while(1){
 		//store image to matrix
 		capture.read(liveFeed);
@@ -209,13 +253,17 @@ int main(int argc, char* argv[])
 		trackingObject(threshold,HSV,liveFeed);
 		}else{
 
-		Food lemon("lemon");
-
 		cvtColor(liveFeed,HSV,COLOR_BGR2HSV);
 		inRange(HSV,lemon.getHSVmin(), lemon.getHSVmax(),threshold);
 		morphOps(threshold);
 		imshow(windowName2,threshold);
 		trackingObject(lemon,threshold,HSV,liveFeed);
+//		std::cout << lemon.getXPos() << endl;
+		string message = intToString(lemon.getXPos())+ ", " + intToString(lemon.getYPos());
+		char const* pchar = message.c_str();
+		write(serialPort, pchar, 50);
+		cout << pchar << endl;
+
 
 	/*	cvtColor(liveFeed,HSV,COLOR_BGR2HSV);
 		inRange(HSV,banana.getHSVmin(), banana.getHSVmax(),threshold);
@@ -226,7 +274,7 @@ int main(int argc, char* argv[])
 		cvtColor(liveFeed,HSV,COLOR_BGR2HSV);
 		inRange(HSV,cherry.getHSVmin(), cherry.getHSVmax(),threshold);
 		morphOps(threshold);
-		imshow(windowName2,threshold);
+		imshow(windowName2,threshold)	;
 		trackingObject(cherry,threshold,HSV,liveFeed);*/
 		}
 
@@ -239,13 +287,8 @@ int main(int argc, char* argv[])
 
 		//delay 30ms so that screen can refresh.
 		//image will not appear without this waitKey() command
-		waitKey(30);
+		waitKey(500);
 	}
-
-
-
-
-
 
 	return 0;
 }
