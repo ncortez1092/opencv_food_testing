@@ -1,3 +1,11 @@
+/* This code is just used to try to send things via the serial to the robot
+
+*/
+
+
+
+
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

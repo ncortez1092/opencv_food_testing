@@ -1,1 +1,1 @@
-/home/ncortez/Documents/Sereneti/opencvtesting/CMakeFiles/Test.dir
+/home/ncortez/Desktop/opencv_food_testing/opencvtesting/CMakeFiles/Test.dir

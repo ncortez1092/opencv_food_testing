@@ -1,5 +1,5 @@
 FILE(REMOVE_RECURSE
-  "CMakeFiles/Test.dir/AutoColourFilter.cpp.o"
+  "CMakeFiles/Test.dir/multipleObjectTracking.cpp.o"
   "Test.pdb"
   "Test"
 )

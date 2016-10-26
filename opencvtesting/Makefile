@@ -39,10 +39,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/ncortez/Documents/Sereneti/opencvtesting
+CMAKE_SOURCE_DIR = /home/ncortez/Desktop/opencv_food_testing/opencvtesting
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/ncortez/Documents/Sereneti/opencvtesting
+CMAKE_BINARY_DIR = /home/ncortez/Desktop/opencv_food_testing/opencvtesting
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -69,9 +69,9 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ncortez/Documents/Sereneti/opencvtesting/CMakeFiles /home/ncortez/Documents/Sereneti/opencvtesting/CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ncortez/Desktop/opencv_food_testing/opencvtesting/CMakeFiles /home/ncortez/Desktop/opencv_food_testing/opencvtesting/CMakeFiles/progress.marks
 	$(MAKE) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ncortez/Documents/Sereneti/opencvtesting/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ncortez/Desktop/opencv_food_testing/opencvtesting/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -111,29 +111,29 @@ Test/fast:
 	$(MAKE) -f CMakeFiles/Test.dir/build.make CMakeFiles/Test.dir/build
 .PHONY : Test/fast
 
-AutoColourFilter.o: AutoColourFilter.cpp.o
-.PHONY : AutoColourFilter.o
+multipleObjectTracking.o: multipleObjectTracking.cpp.o
+.PHONY : multipleObjectTracking.o
 
 # target to build an object file
-AutoColourFilter.cpp.o:
-	$(MAKE) -f CMakeFiles/Test.dir/build.make CMakeFiles/Test.dir/AutoColourFilter.cpp.o
-.PHONY : AutoColourFilter.cpp.o
+multipleObjectTracking.cpp.o:
+	$(MAKE) -f CMakeFiles/Test.dir/build.make CMakeFiles/Test.dir/multipleObjectTracking.cpp.o
+.PHONY : multipleObjectTracking.cpp.o
 
-AutoColourFilter.i: AutoColourFilter.cpp.i
-.PHONY : AutoColourFilter.i
+multipleObjectTracking.i: multipleObjectTracking.cpp.i
+.PHONY : multipleObjectTracking.i
 
 # target to preprocess a source file
-AutoColourFilter.cpp.i:
-	$(MAKE) -f CMakeFiles/Test.dir/build.make CMakeFiles/Test.dir/AutoColourFilter.cpp.i
-.PHONY : AutoColourFilter.cpp.i
+multipleObjectTracking.cpp.i:
+	$(MAKE) -f CMakeFiles/Test.dir/build.make CMakeFiles/Test.dir/multipleObjectTracking.cpp.i
+.PHONY : multipleObjectTracking.cpp.i
 
-AutoColourFilter.s: AutoColourFilter.cpp.s
-.PHONY : AutoColourFilter.s
+multipleObjectTracking.s: multipleObjectTracking.cpp.s
+.PHONY : multipleObjectTracking.s
 
 # target to generate assembly for a file
-AutoColourFilter.cpp.s:
-	$(MAKE) -f CMakeFiles/Test.dir/build.make CMakeFiles/Test.dir/AutoColourFilter.cpp.s
-.PHONY : AutoColourFilter.cpp.s
+multipleObjectTracking.cpp.s:
+	$(MAKE) -f CMakeFiles/Test.dir/build.make CMakeFiles/Test.dir/multipleObjectTracking.cpp.s
+.PHONY : multipleObjectTracking.cpp.s
 
 # Help Target
 help:
@@ -144,9 +144,9 @@ help:
 	@echo "... Test"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
-	@echo "... AutoColourFilter.o"
-	@echo "... AutoColourFilter.i"
-	@echo "... AutoColourFilter.s"
+	@echo "... multipleObjectTracking.o"
+	@echo "... multipleObjectTracking.i"
+	@echo "... multipleObjectTracking.s"
 .PHONY : help
 
 

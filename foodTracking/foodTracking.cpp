@@ -59,7 +59,7 @@ const string windowName4 = "Morphological Operations";
 const string windowName5 = "Controls";
 
 // All classes ( foods )
-Food lemon("lemon");
+Food spatula("spatula");
 
 
 /*
@@ -73,6 +73,7 @@ vector<int> H_ROI, S_ROI, V_ROI; */ // This is all used for dragging HSV detecti
 
 // Function Prototypes
 
+char const* relayCoords(Food);
 void on_trackbar(int, void*){}
 string intToString(int);
 void createTrackbars();
@@ -109,12 +110,12 @@ void trackingObject(Mat threshold,Mat HSV, Mat &liveFeed){
 				//iteration and compare it to the area in the next iteration.
 				if(area>MIN_OBJECT_AREA){
 
-					Food lemon;
+					Food spatula;
 
-					lemon.setXPos(moment.m10/area);	
-					lemon.setYPos(moment.m01/area);
+					spatula.setXPos(moment.m10/area);	
+					spatula.setYPos(moment.m01/area);
 				
-					Ingredients.push_back(lemon);
+					Ingredients.push_back(spatula);
 
 					objectFound = true;
 
@@ -160,12 +161,12 @@ void trackingObject(Food Foods, Mat threshold,Mat HSV, Mat &liveFeed){
 				//iteration and compare it to the area in the next iteration.
 				if(area>MIN_OBJECT_AREA){
 
-					lemon.setXPos(moment.m10/area);	
-					lemon.setYPos(moment.m01/area);
-					lemon.setType(Foods.getType());
-					lemon.setColor(Foods.getColor());
+					spatula.setXPos(moment.m10/area);	
+					spatula.setYPos(moment.m01/area);
+					spatula.setType(Foods.getType());
+					spatula.setColor(Foods.getColor());
 				
-					Ingredients.push_back(lemon);
+					Ingredients.push_back(spatula);
 
 					objectFound = true;
 
@@ -173,10 +174,10 @@ void trackingObject(Food Foods, Mat threshold,Mat HSV, Mat &liveFeed){
 				if(objectFound ==true){
 					//draw object location on screen
 					drawObject(Ingredients,liveFeed);
-					lemon.setXPos(moment.m10/area);	
-					lemon.setYPos(moment.m01/area);
-					lemon.setType(Foods.getType());
-					lemon.setColor(Foods.getColor());}
+					spatula.setXPos(moment.m10/area);	
+					spatula.setYPos(moment.m01/area);
+					spatula.setType(Foods.getType());
+					spatula.setColor(Foods.getColor());}
 
 
 			}
@@ -190,6 +191,10 @@ void trackingObject(Food Foods, Mat threshold,Mat HSV, Mat &liveFeed){
 
 int main(int argc, char* argv[])
 {
+
+	// If we would like to calibrate our filter values, set to true.
+	bool doCalibrate = false;
+	
 
 	// All the stuff below is for server stuff
 	int serialPort;
@@ -214,9 +219,7 @@ int main(int argc, char* argv[])
  	tcsetattr(serialPort, TCSANOW, &portOptions);
   	tcflush(serialPort, TCIOFLUSH);
 
-	// If we would like to calibrate our filter values, set to true.
-	bool doCalibrate = false;
-	
+
 	// Matrix to store each frame of the webcam feed
 	Mat liveFeed;
 	Mat threshold;
@@ -227,70 +230,148 @@ int main(int argc, char* argv[])
 		createTrackbars();
 	}
 	//video capture object to acquire webcam feed
-	VideoCapture capture;
-	capture.open(0);
-	//open capture object at location zero (default location for webcam)
-	//capture.open(0);
-	//set height and width of capture frame
-	//if (!capture.isOpened()){cout << "Couldn't open camera" << endl; return;}
-	capture.set(CV_CAP_PROP_FRAME_WIDTH,FRAME_WIDTH);
-	capture.set(CV_CAP_PROP_FRAME_HEIGHT,FRAME_HEIGHT);
-	//start an infinite loop where webcam feed is copied to liveFeed matrix
-	//all of our operations will be performed within this loop
-	int counter = 0;
+	VideoCapture capture(1);
+	capture.set(CV_CAP_PROP_FRAME_WIDTH,FRAME_WIDTH); // Set width
+	capture.set(CV_CAP_PROP_FRAME_HEIGHT,FRAME_HEIGHT); // Set height
+	int counter = 0; // Used for serial stuff
 	while(1){
-		//store image to matrix
+		// Store what is read from camera
 		capture.read(liveFeed);
-		//convert frame from BGR to HSV colorspace
+		// Get an HSV image (hue, saturation, value)
 		cvtColor(liveFeed,HSV,COLOR_BGR2HSV);
 
 		if(doCalibrate==true){
-		//if in calibration mode, we track objects based on the HSV slider values.
+		// if doCalibrate == true, we go into calibration mode with sliders to find values
 		cvtColor(liveFeed,HSV,COLOR_BGR2HSV);
 		inRange(HSV,Scalar(Hmin,Smin,Vmin),Scalar(Hmax,Smax,Vmax),threshold);
 		morphOps(threshold);
 		imshow(windowName2,threshold);
 		trackingObject(threshold,HSV,liveFeed);
 		}else{
-
+		// If we aren't in calibrate mode, these foods wil lbe found.
 		cvtColor(liveFeed,HSV,COLOR_BGR2HSV);
-		inRange(HSV,lemon.getHSVmin(), lemon.getHSVmax(),threshold);
+		inRange(HSV,spatula.getHSVmin(), spatula.getHSVmax(),threshold);
 		morphOps(threshold);
 		imshow(windowName2,threshold);
-		trackingObject(lemon,threshold,HSV,liveFeed);
-//		std::cout << lemon.getXPos() << endl;
-		string message = intToString(lemon.getXPos())+ ", " + intToString(lemon.getYPos());
-		char const* pchar = message.c_str();
-		write(serialPort, pchar, 50);
-		cout << pchar << endl;
+		trackingObject(spatula,threshold,HSV,liveFeed);
 
+		// Gets the coords of our spatula and returns it to the robot
+		char const* spatulaChar = relayCoords(spatula);
+		cout << spatulaChar << endl;
+		write(serialPort, spatulaChar, 64);
 
-	/*	cvtColor(liveFeed,HSV,COLOR_BGR2HSV);
-		inRange(HSV,banana.getHSVmin(), banana.getHSVmax(),threshold);
-		morphOps(threshold);
-		imshow(windowName2,threshold);
-		trackingObject(banana,threshold,HSV,liveFeed);
-
-		cvtColor(liveFeed,HSV,COLOR_BGR2HSV);
-		inRange(HSV,cherry.getHSVmin(), cherry.getHSVmax(),threshold);
-		morphOps(threshold);
-		imshow(windowName2,threshold)	;
-		trackingObject(cherry,threshold,HSV,liveFeed);*/
 		}
 
-		//show frames 
-		//imshow(windowName2,threshold);
-
 		imshow(windowName1,liveFeed);
-		//imshow(windowName1,HSV);
 
-
-		//delay 30ms so that screen can refresh.
-		//image will not appear without this waitKey() command
-		waitKey(500);
+		waitKey(500); // Wait 5 seconds before relaying the coords again. Will not work without this,
+					  // Make 0 to run forever and not wait
 	}
 
 	return 0;
+}
+char const* relayCoords(Food theFood){
+/*
+Below is the picture coords 4 quadrants. The idea is we need
+ to change them to a similar format as that of GantryProto1.h
+ The below is after the initial shift (x - 320, y - 240)
+---------------------------------------------|
+	Q1				|		Q2				 |
+					|						 |
+					|						 |
+		x < 0		|		x > 0			 |
+		y < 0		|		y < 0			 |
+					|						 |
+					|						 |
+----------------------------------------------
+	Q3				|		Q4				 |
+					|						 |
+					|						 |
+					|						 |
+		x < 0		|		x > 0			 |
+		y > 0		|		y > 0			 |
+					|						 |
+					|						 |
+----------------------------------------------
+
+The Gantry is of the following format
+
+
+---------------------------------------------|
+	Q1				|		Q2				 |
+					|						 |
+					|						 |
+		x < 0		|		x < 0			 |
+		y > 0		|		y < 0			 |
+					|						 |
+					|						 |
+----------------------------------------------
+	Q3				|		Q4				 |
+					|						 |
+					|						 |
+					|						 |
+		x > 0		|		x > 0			 |
+		y > 0		|		y < 0			 |
+					|						 |
+					|						 |
+----------------------------------------------
+
+
+So we must do cross quadrant checks. Also keep in mind that this is considering that the picture is taken
+wrt the front of the robot, facing the cookpot's face.
+
+
+
+
+
+*/
+
+// This will return a char const* of the coords to whatever food we are using. It will then be passed to the
+// Serial after. Which is why it needs to be char const*.
+		int x = theFood.getXPos();
+		int y = theFood.getYPos();
+		int xCoord, yCoord;
+
+		// Initial shift
+		x = x - 320;
+		y = y - 240;
+
+		// Initializing the normalization coefficients
+		double xNorm = (double)(114)/(320);
+		double yNorm = (double)(138)/(240);
+
+		if (x < 0 && y < 0) // Quadrant 1
+			{
+				xCoord = xNorm*x;
+				yCoord = (-1)*yNorm*y;
+			}
+		else if (x > 0 && y < 0) // Quadrant 2
+			{
+				xCoord = (-1)*xNorm*x;
+				yCoord = yNorm*y;
+			}
+		else if (x < 0 && y > 0) // Quadrant 3
+			{
+				xCoord = (-1)*xNorm*x; 
+				yCoord = yNorm*y;
+			}
+		else if (x > 0 && y > 0) // Quadrant 4
+			{
+				xCoord = xNorm*x;
+				yCoord = (-1)*yNorm*y;
+			}
+		else if (x == 0 && y == 0)
+			{
+				xCoord = 0;
+				yCoord = 0;
+			}
+
+
+
+		string message = intToString(xCoord) + ", " + intToString(yCoord);
+		//string message = intToString(theFood.getXPos())+ ", " + intToString(theFood.getYPos());
+		char const* pchar = message.c_str();
+		return pchar;
 }
 
 string intToString(int number){
@@ -300,20 +381,17 @@ string intToString(int number){
 }
 void createTrackbars(){
 
+	// Makes trackbars
+
 	namedWindow(windowName5,0);
 
-	char TrackbarName[50]; // Create memory
+	char TrackbarName[50];
 	sprintf(TrackbarName, "Hmin", Hmin);
 	sprintf(TrackbarName, "Hmax", Hmax);
 	sprintf(TrackbarName, "Smin", Smin); 
 	sprintf(TrackbarName, "Smax", Smax); 
 	sprintf(TrackbarName, "Vmin", Vmin);
-	sprintf(TrackbarName, "Vmax", Vmax);
-	//create trackbars and insert them into window
-	//3 parameters are: the address of the variable that is changing when the trackbar is moved(eg.H_LOW),
-	//the max value the trackbar can move (eg. H_HIGH), 
-	//and the function that is called whenever the trackbar is moved(eg. on_trackbar)
-	//                                  ---->    ---->     ---->      
+	sprintf(TrackbarName, "Vmax", Vmax);    
 	createTrackbar("Hmin", windowName5, &Hmin, 255, on_trackbar);
 	createTrackbar("Hmax", windowName5, &Hmax, 255, on_trackbar);
 	createTrackbar("Smin", windowName5, &Smin, 255, on_trackbar);
@@ -323,10 +401,12 @@ void createTrackbars(){
 }
 void drawObject(vector<Food> Foods, Mat &frame){
 
+	// This creates the circle and tracks it
+
 	for(int i=0; i < Foods.size(); i++)
 	{
 
-	cv::circle(frame,cv::Point(Foods.at(i).getXPos(),Foods.at(i).getYPos()),10,cv::Scalar(0,0,255));
+	cv::circle(frame,cv::Point(Foods.at(i).getXPos(),Foods.at(i).getYPos()),10,cv::Scalar(100,100,100));
 	cv::putText(frame,intToString(Foods.at(i).getXPos())+ " , " + intToString(Foods.at(i).getYPos()),cv::Point(Foods.at(i).getXPos(),Foods.at(i).getYPos()+20),1,1,Scalar(0,255,0));
 	cv::putText(frame,Foods.at(i).getType(),cv::Point(Foods.at(i).getXPos(),Foods.at(i).getYPos()-30),1,2,Foods.at(i).getColor());
 	}

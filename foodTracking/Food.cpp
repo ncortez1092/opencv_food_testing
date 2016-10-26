@@ -8,11 +8,11 @@ Food::Food(void)
 Food::Food(string name)
 {
 	setType(name);
-	if (name == "lemon")
+	if (name == "spatula")
 	{
-		this->setHSVmin(Scalar(95, 125, 195));
-		this->setHSVmax(Scalar(129, 183, 255));
-		this->setColor(Scalar(0,255,0));
+		this->setHSVmin(Scalar(162, 235, 57));
+		this->setHSVmax(Scalar(184, 255, 255));
+		this->setColor(Scalar(0,0,255));
 	}
 }
 

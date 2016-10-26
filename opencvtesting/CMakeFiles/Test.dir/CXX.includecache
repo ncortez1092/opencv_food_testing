@@ -6,17 +6,29 @@
 
 #IncludeRegexTransform: 
 
-/home/ncortez/Documents/Sereneti/opencvtesting/AutoColourFilter.cpp
+/home/ncortez/Desktop/opencv_food_testing/opencvtesting/Fruit.cpp
+Fruit.h
+/home/ncortez/Desktop/opencv_food_testing/opencvtesting/Fruit.h
+
+/home/ncortez/Desktop/opencv_food_testing/opencvtesting/Fruit.h
+string
+-
+opencv2/opencv.hpp
+/home/ncortez/Desktop/opencv_food_testing/opencvtesting/opencv2/opencv.hpp
+opencv2/highgui.hpp
+/home/ncortez/Desktop/opencv_food_testing/opencvtesting/opencv2/highgui.hpp
+Fruit.cpp
+/home/ncortez/Desktop/opencv_food_testing/opencvtesting/Fruit.cpp
+
+/home/ncortez/Desktop/opencv_food_testing/opencvtesting/multipleObjectTracking.cpp
 sstream
 -
 string
 -
 iostream
 -
-opencv2/highgui.hpp
-/home/ncortez/Documents/Sereneti/opencvtesting/opencv2/highgui.hpp
-opencv2/opencv.hpp
-/home/ncortez/Documents/Sereneti/opencvtesting/opencv2/opencv.hpp
+Fruit.h
+/home/ncortez/Desktop/opencv_food_testing/opencvtesting/Fruit.h
 
 /usr/local/include/opencv/cxcore.h
 opencv2/core/core_c.h

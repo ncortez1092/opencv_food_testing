@@ -47,10 +47,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/ncortez/Documents/Sereneti/opencvtesting
+CMAKE_SOURCE_DIR = /home/ncortez/Desktop/opencv_food_testing/opencvtesting
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/ncortez/Documents/Sereneti/opencvtesting
+CMAKE_BINARY_DIR = /home/ncortez/Desktop/opencv_food_testing/opencvtesting
 
 #=============================================================================
 # Target rules for target CMakeFiles/Test.dir
@@ -59,7 +59,7 @@ CMAKE_BINARY_DIR = /home/ncortez/Documents/Sereneti/opencvtesting
 CMakeFiles/Test.dir/all:
 	$(MAKE) -f CMakeFiles/Test.dir/build.make CMakeFiles/Test.dir/depend
 	$(MAKE) -f CMakeFiles/Test.dir/build.make CMakeFiles/Test.dir/build
-	$(CMAKE_COMMAND) -E cmake_progress_report /home/ncortez/Documents/Sereneti/opencvtesting/CMakeFiles  1
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/ncortez/Desktop/opencv_food_testing/opencvtesting/CMakeFiles  1
 	@echo "Built target Test"
 .PHONY : CMakeFiles/Test.dir/all
 
@@ -69,9 +69,9 @@ all: CMakeFiles/Test.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/Test.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ncortez/Documents/Sereneti/opencvtesting/CMakeFiles 1
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ncortez/Desktop/opencv_food_testing/opencvtesting/CMakeFiles 1
 	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/Test.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ncortez/Documents/Sereneti/opencvtesting/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ncortez/Desktop/opencv_food_testing/opencvtesting/CMakeFiles 0
 .PHONY : CMakeFiles/Test.dir/rule
 
 # Convenience name for target.
