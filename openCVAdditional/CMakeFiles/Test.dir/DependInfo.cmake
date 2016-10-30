@@ -4,7 +4,7 @@ SET(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 SET(CMAKE_DEPENDS_CHECK_CXX
-  "/home/ncortez/Desktop/opencv_food_testing/opencvtesting/objectTrackingTut.cpp" "/home/ncortez/Desktop/opencv_food_testing/opencvtesting/CMakeFiles/Test.dir/objectTrackingTut.cpp.o"
+  "/home/ncortez/Desktop/opencv_food_testing/openCVAdditional/foodTrackingAdditional.cpp" "/home/ncortez/Desktop/opencv_food_testing/openCVAdditional/CMakeFiles/Test.dir/foodTrackingAdditional.cpp.o"
   )
 SET(CMAKE_CXX_COMPILER_ID "GNU")
 

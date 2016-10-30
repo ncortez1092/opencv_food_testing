@@ -6,17 +6,41 @@
 
 #IncludeRegexTransform: 
 
-/home/ncortez/Desktop/opencv_food_testing/opencvtesting/objectTrackingTut.cpp
+/home/ncortez/Desktop/opencv_food_testing/openCVAdditional/FoodAdditional.cpp
+FoodAdditional.h
+/home/ncortez/Desktop/opencv_food_testing/openCVAdditional/FoodAdditional.h
+
+/home/ncortez/Desktop/opencv_food_testing/openCVAdditional/FoodAdditional.h
+string
+-
+opencv2/opencv.hpp
+/home/ncortez/Desktop/opencv_food_testing/openCVAdditional/opencv2/opencv.hpp
+opencv2/highgui.hpp
+/home/ncortez/Desktop/opencv_food_testing/openCVAdditional/opencv2/highgui.hpp
+
+/home/ncortez/Desktop/opencv_food_testing/openCVAdditional/foodTrackingAdditional.cpp
+stdlib.h
+-
+stdio.h
+-
+string.h
+-
+termios.h
+-
+unistd.h
+-
+fcntl.h
+-
 sstream
 -
 string
 -
 iostream
 -
-opencv2/highgui.hpp
-/home/ncortez/Desktop/opencv_food_testing/opencvtesting/opencv2/highgui.hpp
-opencv2/opencv.hpp
-/home/ncortez/Desktop/opencv_food_testing/opencvtesting/opencv2/opencv.hpp
+FoodAdditional.h
+/home/ncortez/Desktop/opencv_food_testing/openCVAdditional/FoodAdditional.h
+FoodAdditional.cpp
+/home/ncortez/Desktop/opencv_food_testing/openCVAdditional/FoodAdditional.cpp
 
 /usr/local/include/opencv/cxcore.h
 opencv2/core/core_c.h

@@ -125,7 +125,7 @@ void trackingObject(Mat threshold,Mat HSV, Mat &liveFeed){
 			}
 			//let user know you found an object
 			if(objectFound ==true){
-				//draw object location on screen
+				putText(liveFeed, "Tracking", Point(0, 25), 1, 1, Scalar(0,0,255), 2);
 				drawObject(Ingredients,liveFeed);}
 
 		}else putText(liveFeed,"TOO MUCH NOISE! ADJUST FILTER",Point(0,50),1,2,Scalar(0,0,255),2);
@@ -172,7 +172,7 @@ void trackingObject(Food Foods, Mat threshold,Mat HSV, Mat &liveFeed){
 
 				}else objectFound = false;
 				if(objectFound ==true){
-					//draw object location on screen
+					putText(liveFeed, "Tracking", Point(0, 25), 1, 1, Scalar(0,0,255), 2);
 					drawObject(Ingredients,liveFeed);
 					spatula.setXPos(moment.m10/area);	
 					spatula.setYPos(moment.m01/area);
@@ -230,10 +230,10 @@ int main(int argc, char* argv[])
 		createTrackbars();
 	}
 	//video capture object to acquire webcam feed
-	VideoCapture capture(1);
+	VideoCapture capture;
+	capture.open(0);
 	capture.set(CV_CAP_PROP_FRAME_WIDTH,FRAME_WIDTH); // Set width
 	capture.set(CV_CAP_PROP_FRAME_HEIGHT,FRAME_HEIGHT); // Set height
-	int counter = 0; // Used for serial stuff
 	while(1){
 		// Store what is read from camera
 		capture.read(liveFeed);
@@ -264,7 +264,7 @@ int main(int argc, char* argv[])
 
 		imshow(windowName1,liveFeed);
 
-		waitKey(500); // Wait 5 seconds before relaying the coords again. Will not work without this,
+		waitKey(100); // Wait 5 seconds before relaying the coords again. Will not work without this,
 					  // Make 0 to run forever and not wait
 	}
 

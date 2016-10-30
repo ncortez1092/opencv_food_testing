@@ -39,10 +39,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/ncortez/Desktop/opencv_food_testing/opencvtesting
+CMAKE_SOURCE_DIR = /home/ncortez/Desktop/opencv_food_testing/openCVAdditional
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/ncortez/Desktop/opencv_food_testing/opencvtesting
+CMAKE_BINARY_DIR = /home/ncortez/Desktop/opencv_food_testing/openCVAdditional
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -69,9 +69,9 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ncortez/Desktop/opencv_food_testing/opencvtesting/CMakeFiles /home/ncortez/Desktop/opencv_food_testing/opencvtesting/CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ncortez/Desktop/opencv_food_testing/openCVAdditional/CMakeFiles /home/ncortez/Desktop/opencv_food_testing/openCVAdditional/CMakeFiles/progress.marks
 	$(MAKE) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ncortez/Desktop/opencv_food_testing/opencvtesting/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/ncortez/Desktop/opencv_food_testing/openCVAdditional/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -111,29 +111,29 @@ Test/fast:
 	$(MAKE) -f CMakeFiles/Test.dir/build.make CMakeFiles/Test.dir/build
 .PHONY : Test/fast
 
-objectTrackingTut.o: objectTrackingTut.cpp.o
-.PHONY : objectTrackingTut.o
+foodTrackingAdditional.o: foodTrackingAdditional.cpp.o
+.PHONY : foodTrackingAdditional.o
 
 # target to build an object file
-objectTrackingTut.cpp.o:
-	$(MAKE) -f CMakeFiles/Test.dir/build.make CMakeFiles/Test.dir/objectTrackingTut.cpp.o
-.PHONY : objectTrackingTut.cpp.o
+foodTrackingAdditional.cpp.o:
+	$(MAKE) -f CMakeFiles/Test.dir/build.make CMakeFiles/Test.dir/foodTrackingAdditional.cpp.o
+.PHONY : foodTrackingAdditional.cpp.o
 
-objectTrackingTut.i: objectTrackingTut.cpp.i
-.PHONY : objectTrackingTut.i
+foodTrackingAdditional.i: foodTrackingAdditional.cpp.i
+.PHONY : foodTrackingAdditional.i
 
 # target to preprocess a source file
-objectTrackingTut.cpp.i:
-	$(MAKE) -f CMakeFiles/Test.dir/build.make CMakeFiles/Test.dir/objectTrackingTut.cpp.i
-.PHONY : objectTrackingTut.cpp.i
+foodTrackingAdditional.cpp.i:
+	$(MAKE) -f CMakeFiles/Test.dir/build.make CMakeFiles/Test.dir/foodTrackingAdditional.cpp.i
+.PHONY : foodTrackingAdditional.cpp.i
 
-objectTrackingTut.s: objectTrackingTut.cpp.s
-.PHONY : objectTrackingTut.s
+foodTrackingAdditional.s: foodTrackingAdditional.cpp.s
+.PHONY : foodTrackingAdditional.s
 
 # target to generate assembly for a file
-objectTrackingTut.cpp.s:
-	$(MAKE) -f CMakeFiles/Test.dir/build.make CMakeFiles/Test.dir/objectTrackingTut.cpp.s
-.PHONY : objectTrackingTut.cpp.s
+foodTrackingAdditional.cpp.s:
+	$(MAKE) -f CMakeFiles/Test.dir/build.make CMakeFiles/Test.dir/foodTrackingAdditional.cpp.s
+.PHONY : foodTrackingAdditional.cpp.s
 
 # Help Target
 help:
@@ -144,9 +144,9 @@ help:
 	@echo "... Test"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
-	@echo "... objectTrackingTut.o"
-	@echo "... objectTrackingTut.i"
-	@echo "... objectTrackingTut.s"
+	@echo "... foodTrackingAdditional.o"
+	@echo "... foodTrackingAdditional.i"
+	@echo "... foodTrackingAdditional.s"
 .PHONY : help
 
 
