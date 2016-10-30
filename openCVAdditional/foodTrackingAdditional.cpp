@@ -9,6 +9,9 @@ Steps:
 5. Relay the (x,y) coordinates of each piece of food to the robot whenever called upon
 	1. We will need to transform coordinates from the image to the robot somehow
 
+Instructions:
+Ensure that the center of the pot is in the center of your cropped image and that the middle of the pot registers a (0,0) coordinate.
+
 	THIS IS A TESTING CODE! DO NOT USE FOR PRODUCTION!!
 
 */
@@ -105,7 +108,7 @@ int main(int argc, char* argv[])
 		trackingObject(spatula,thresholdImg,HSV,liveFeed);
 
 		// Gets the coords of our spatula and returns it to the robot
-		char const* spatulaChar = relayCoords(spatula);
+		char const* spatulaChar = relayCoords(spatula, liveFeed);
 		cout << spatulaChar << endl;
 		write(serialPort, spatulaChar, 64);
 

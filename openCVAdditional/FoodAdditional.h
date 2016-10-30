@@ -103,7 +103,7 @@ void setUpSerial();
 
 
 
-char const* relayCoords(Food theFood){
+char const* relayCoords(Food theFood, Mat& frame){
 /*
 Below is the picture coords 4 quadrants. The idea is we need
  to change them to a similar format as that of GantryProto1.h
@@ -161,17 +161,19 @@ wrt the front of the robot, facing the cookpot's face.
 
 // This will return a char const* of the coords to whatever food we are using. It will then be passed to the
 // Serial after. Which is why it needs to be char const*.
+		int row = frame.rows; // x pixels, for example it will be 640 for a 640 x 480 img
+		int col = frame.cols; // y pixels, for example it will be 480 for a 640 x 480 img
 		int x = theFood.getXPos();
 		int y = theFood.getYPos();
 		int xCoord, yCoord;
 
 		// Initial shift
-		x = x - 125;
-		y = y - 125;
+		x = x - row/2;
+		y = y - col/2;
 
 		// Initializing the normalization coefficients
-		double xNorm = (double)(114)/(250);
-		double yNorm = (double)(138)/(250);
+		double xNorm = (double)(114)/(row);
+		double yNorm = (double)(138)/(col);
 
 		if (x < 0 && y < 0) // Quadrant 1
 			{
