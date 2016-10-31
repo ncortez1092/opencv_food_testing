@@ -90,9 +90,10 @@ int main(int argc, char* argv[])
 	//	imshow("test", mask); // debug
 		temp.copyTo( liveFeed, mask );
 		liveFeed = liveFeed(myCropROI);
-		cvtColor(liveFeed,HSV,COLOR_BGR2HSV);
-		liveFeed.copyTo(liveFeed1);
-		liveFeed.copyTo(liveFeed2);
+		cvtColor(liveFeed,HSV,COLOR_BGR2HSV); 
+		resize(liveFeed, liveFeed, Size(320, 280));
+	//	liveFeed.copyTo(liveFeed);
+	//	liveFeed.copyTo(liveFeed);
 		if(doCalibrate==true){
 		// if doCalibrate == true, we go into calibration mode with sliders to find values
 		cvtColor(liveFeed,HSV,COLOR_BGR2HSV);
@@ -102,26 +103,26 @@ int main(int argc, char* argv[])
 		trackingObjectCalibration(thresholdImg,HSV,liveFeed);
 	 	}else{
 		// If we aren't in calibrate mode, these foods will be found.
-		cvtColor(liveFeed1,HSV1,COLOR_BGR2HSV);
-		inRange(HSV1,Broccoli.getHSVmin(), Broccoli.getHSVmax(),thresholdImg1);
-		morphOps(thresholdImg1);
-		imshow(windowThresh1,thresholdImg1);
-		trackingObject(Broccoli,thresholdImg1,HSV1,liveFeed1);
-		char const* BroccoliChar = relayCoords(Broccoli, liveFeed1);
-
-		cvtColor(liveFeed2,HSV2,COLOR_BGR2HSV);
-		inRange(HSV2,Carrot.getHSVmin(), Carrot.getHSVmax(),thresholdImg2);
-		morphOps(thresholdImg2);
-		imshow(windowThresh2,thresholdImg2);
-		trackingObject(Carrot,thresholdImg2,HSV2,liveFeed2);
-		char const* CarrotChar = relayCoords(Carrot, liveFeed2);
-
-		if (counttest % 100 == 0 && sizeof(BroccoliChar) > 6)
+	 	tcflush(serialPort, TCIOFLUSH);
+		cvtColor(liveFeed,HSV,COLOR_BGR2HSV);
+		inRange(HSV,Broccoli.getHSVmin(), Broccoli.getHSVmax(),thresholdImg);
+		morphOps(thresholdImg);
+		imshow(windowThresh,thresholdImg);
+		trackingObjectBroc(Broccoli,thresholdImg,HSV,liveFeed);
+		char const* BroccoliChar = relayCoords(Broccoli, liveFeed);
+		if (counttest % 60 == 0 && sizeof(BroccoliChar) > 6)
 		{
 		write(serialPort, BroccoliChar, 62);
 		cout << BroccoliChar << endl;
 		}
-		if (counttest % 70 == 0 && sizeof(CarrotChar) > 6)
+		tcflush(serialPort, TCIOFLUSH);
+		cvtColor(liveFeed,HSV,COLOR_BGR2HSV);
+		inRange(HSV,Carrot.getHSVmin(), Carrot.getHSVmax(),thresholdImg);
+		morphOps(thresholdImg);
+		imshow(windowThresh,thresholdImg);
+		trackingObjectCarrot(Carrot,thresholdImg,HSV,liveFeed);
+		char const* CarrotChar = relayCoords(Carrot, liveFeed);
+		if (counttest % 60 == 0 && sizeof(CarrotChar) > 6)
 		{
 			write(serialPort, CarrotChar, 62);
 			cout << CarrotChar << endl;
@@ -129,8 +130,8 @@ int main(int argc, char* argv[])
 				counttest += 1;
 		}
 
-		imshow(windowOriginal1,liveFeed1);
-		imshow(windowOriginal2,liveFeed2);
+		imshow(windowOriginal1,liveFeed);
+	//	imshow(windowOriginal2,liveFeed);
 
 		waitKey(50); // Wait .5 seconds before relaying the coords again. Will not work without this,
 					  // Make 0 to run forever and not wait

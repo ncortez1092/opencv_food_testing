@@ -68,7 +68,7 @@ const int FRAME_HEIGHT = 480;
 
 // Other obvious declarations
 const int MAX_NUM_OBJECTS = 50; // Max number of objects
-const int MIN_OBJECT_AREA = 4*4; // Min area of an object we will bother detecting
+const int MIN_OBJECT_AREA = 20*20; // Min area of an object we will bother detecting
 const int MAX_OBJECT_AREA = (FRAME_HEIGHT*FRAME_WIDTH) / 1.5; // Max area of an object we will detect
 
 // Window names for our program
@@ -177,18 +177,21 @@ wrt the front of the robot, facing the cookpot's face.
 		int x = theFood.getXPos();
 		int y = theFood.getYPos();
 		int xCoord, yCoord;
+		string myChar;
 
 		string type = theFood.getType();
-		if (type == "Broccoli") {type = "b";}
-		if (type == "Carrot") {type = "c";}
+		if (type == "Broccoli") {myChar = 'b';}
+		if (type == "Carrot") {myChar = 'c';}
 
 		// Initial shift
 		x = x - row/2;
 		y = y - col/2;
 
 		// Initializing the normalization coefficients
-		double xNorm = (double)(114)/(row);
-		double yNorm = (double)(138)/(col);
+		double xNorm = (double)(114)/(row/2);
+		double yNorm = (double)(135)/(col/2);
+	//	double xNorm = 0.65;
+	//	double yNorm = 0.65;
 
 		if (x < 0 && y < 0) // Quadrant 1
 			{
@@ -215,10 +218,7 @@ wrt the front of the robot, facing the cookpot's face.
 				xCoord = 0;
 				yCoord = 0;
 			}
-
-
-
-		string message = type + ", " + intToString(xCoord) + ", " + intToString(yCoord);
+		string message = myChar + ", " + intToString(xCoord) + ", " + intToString(yCoord);
 		//string message = intToString(theFood.getXPos())+ ", " + intToString(theFood.getYPos());
 		char const* pchar = message.c_str();
 		return pchar;
@@ -252,16 +252,16 @@ void createTrackbars(){
 	createTrackbar("Vmin", windowControls, &Vmin, 255, on_trackbar);
 	createTrackbar("Vmax", windowControls, &Vmax, 255, on_trackbar);
 }
-void drawObject(vector<Food> Foods, Mat &frame){
+void drawObject(vector<Food> theFood, Mat &frame){
 
 	// This creates the circle and tracks it
 
-	for(int i=0; i < Foods.size(); i++)
+	for(int i=0; i < theFood.size(); i++)
 	{
 
-	cv::circle(frame,cv::Point(Foods.at(i).getXPos(),Foods.at(i).getYPos()),10,cv::Scalar(100,100,100));
-	cv::putText(frame,intToString(Foods.at(i).getXPos())+ " , " + intToString(Foods.at(i).getYPos()),cv::Point(Foods.at(i).getXPos(),Foods.at(i).getYPos()+20),1,1,Scalar(0,255,0));
-	cv::putText(frame,Foods.at(i).getType(),cv::Point(Foods.at(i).getXPos(),Foods.at(i).getYPos()-30),1,2,Foods.at(i).getColor());
+	cv::circle(frame,cv::Point(theFood.at(i).getXPos(),theFood.at(i).getYPos()),10,cv::Scalar(0,100,100));
+	cv::putText(frame,intToString(theFood.at(i).getXPos())+ " , " + intToString(theFood.at(i).getYPos()),cv::Point(theFood.at(i).getXPos(),theFood.at(i).getYPos()+20),1,1,theFood.at(i).getColor());
+	cv::putText(frame,theFood.at(i).getType(),cv::Point(theFood.at(i).getXPos(),theFood.at(i).getYPos()-30),1,2,theFood.at(i).getColor(), 2);
 	}
 
 
@@ -333,8 +333,9 @@ void trackingObjectCalibration(Mat thresholdImg,Mat HSV, Mat &liveFeed){
 	}
 }
 
-void trackingObject(Food Foods, Mat thresholdImg,Mat HSV, Mat &liveFeed){
-
+void trackingObject(Food theFood, Mat thresholdImg,Mat HSV, Mat &liveFeed){
+	Food *ptrFood;
+	ptrFood = &theFood;
 	vector<Food> Ingredients;
 
 	Mat tempImg;
@@ -362,12 +363,12 @@ void trackingObject(Food Foods, Mat thresholdImg,Mat HSV, Mat &liveFeed){
 				//iteration and compare it to the area in the next iteration.
 				if(area>MIN_OBJECT_AREA){
 
-					Foods.setXPos(moment.m10/area);	
-					Foods.setYPos(moment.m01/area);
-					Foods.setType(Foods.getType());
-					Foods.setColor(Foods.getColor());
+					Broccoli.setXPos(moment.m10/area);	
+					ptrFood->setYPos(moment.m01/area);
+					ptrFood->setType(theFood.getType());
+					ptrFood->setColor(theFood.getColor());
 				
-					Ingredients.push_back(Foods);
+					Ingredients.push_back(theFood);
 
 					objectFound = true;
 
@@ -375,10 +376,126 @@ void trackingObject(Food Foods, Mat thresholdImg,Mat HSV, Mat &liveFeed){
 				if(objectFound ==true){
 					putText(liveFeed, "Tracking", Point(0, 50), 1, 1, Scalar(0,0,255), 2);
 					drawObject(Ingredients,liveFeed);
-					Foods.setXPos(moment.m10/area);	
-					Foods.setYPos(moment.m01/area);
-					Foods.setType(Foods.getType());
-					Foods.setColor(Foods.getColor());}
+					ptrFood->setXPos(moment.m10/area);	
+					ptrFood->setYPos(moment.m01/area);
+					ptrFood->setType(theFood.getType());
+					ptrFood->setColor(theFood.getColor());}
+
+
+			}
+			//let user know you found an object
+
+
+		}else putText(liveFeed,"TOO MUCH NOISE! ADJUST FILTER",Point(0,50),1,2,Scalar(0,0,255),2);
+	}
+
+}
+void trackingObjectBroc(Food theFood, Mat thresholdImg,Mat HSV, Mat &liveFeed){
+	Food *ptrFood;
+	ptrFood = &theFood;
+	vector<Food> Ingredients;
+
+	Mat tempImg;
+	thresholdImg.copyTo(tempImg);
+	//these two vectors needed for output of findContours
+	vector< vector<Point> > contours;
+	vector<Vec4i> hierarchy;
+	//find contours of filtered image using openCV findContours function
+	findContours(tempImg,contours,hierarchy,CV_RETR_CCOMP,CV_CHAIN_APPROX_SIMPLE );
+	//use moments method to find our filtered object
+	double refArea = 0;
+	bool objectFound = false;
+	if (hierarchy.size() > 0) {
+		int num_of_Objects = hierarchy.size();
+		//if number of objects greater than MAX_NUM_OBJECTS we have a noisy filter
+		if(num_of_Objects<MAX_NUM_OBJECTS){
+			for (int index = 0; index >= 0; index = hierarchy[index][0]) {
+
+				Moments moment = moments((cv::Mat)contours[index]);
+				double area = moment.m00;
+
+				//if the area is less than 20 px by 20px then it is probably just noise
+				//if the area is the same as the 3/2 of the image size, probably just a bad filter
+				//we only want the object with the largest area so we safe a reference area each
+				//iteration and compare it to the area in the next iteration.
+				if(area>MIN_OBJECT_AREA){
+
+					Broccoli.setXPos(moment.m10/area);	
+					Broccoli.setYPos(moment.m01/area);
+					Broccoli.setType(theFood.getType());
+					Broccoli.setColor(theFood.getColor());
+				
+					Ingredients.push_back(Broccoli);
+
+					objectFound = true;
+
+				}else objectFound = false;
+				if(objectFound ==true){
+					putText(liveFeed, "Tracking", Point(0, 50), 1, 1, Scalar(0,0,255), 2);
+					drawObject(Ingredients,liveFeed);
+					Broccoli.setXPos(moment.m10/area);	
+					Broccoli.setYPos(moment.m01/area);
+					Broccoli.setType(theFood.getType());
+					Broccoli.setColor(theFood.getColor());
+				}
+
+
+			}
+			//let user know you found an object
+
+
+		}else putText(liveFeed,"TOO MUCH NOISE! ADJUST FILTER",Point(0,50),1,2,Scalar(0,0,255),2);
+	}
+
+}
+void trackingObjectCarrot(Food theFood, Mat thresholdImg,Mat HSV, Mat &liveFeed){
+	Food *ptrFood;
+	ptrFood = &theFood;
+	vector<Food> Ingredients;
+
+	Mat tempImg;
+	thresholdImg.copyTo(tempImg);
+	//these two vectors needed for output of findContours
+	vector< vector<Point> > contours;
+	vector<Vec4i> hierarchy;
+	//find contours of filtered image using openCV findContours function
+	findContours(tempImg,contours,hierarchy,CV_RETR_CCOMP,CV_CHAIN_APPROX_SIMPLE );
+	//use moments method to find our filtered object
+	double refArea = 0;
+	bool objectFound = false;
+	if (hierarchy.size() > 0) {
+		int num_of_Objects = hierarchy.size();
+		//if number of objects greater than MAX_NUM_OBJECTS we have a noisy filter
+		if(num_of_Objects<MAX_NUM_OBJECTS){
+			for (int index = 0; index >= 0; index = hierarchy[index][0]) {
+
+				Moments moment = moments((cv::Mat)contours[index]);
+				double area = moment.m00;
+
+				//if the area is less than 20 px by 20px then it is probably just noise
+				//if the area is the same as the 3/2 of the image size, probably just a bad filter
+				//we only want the object with the largest area so we safe a reference area each
+				//iteration and compare it to the area in the next iteration.
+				if(area>MIN_OBJECT_AREA){
+
+					Carrot.setXPos(moment.m10/area);	
+					Carrot.setYPos(moment.m01/area);
+					Carrot.setType(theFood.getType());
+					Carrot.setColor(theFood.getColor());
+				
+					Ingredients.push_back(Carrot);
+
+					objectFound = true;
+
+				}else objectFound = false;
+				if(objectFound ==true){
+					putText(liveFeed, "Tracking", Point(0, 50), 1, 1, Scalar(0,0,255), 2);
+					drawObject(Ingredients,liveFeed);
+					Carrot.setXPos(moment.m10/area);	
+					Carrot.setYPos(moment.m01/area);
+					Carrot.setType(theFood.getType());
+					Carrot.setColor(theFood.getColor());
+				}
 
 
 			}

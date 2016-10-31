@@ -10,17 +10,17 @@ Food::Food(string name)
 
 	if (name == "Broccoli")
 	{
-		this->setHSVmin(Scalar(28, 189, 41));
-		this->setHSVmax(Scalar(49, 255, 105));
-		this->setColor(Scalar(0,0,255));
+		this->setHSVmin(Scalar(29, 151, 51));
+		this->setHSVmax(Scalar(36, 255, 130));
+		this->setColor(Scalar(0,255,0));
 			setType(name);
 	}
 		
 	if (name == "Carrot")
 	{
-		this->setHSVmin(Scalar(11, 197, 124));
-		this->setHSVmax(Scalar(14, 255, 211));
-		this->setColor(Scalar(255,255,255));
+		this->setHSVmin(Scalar(10, 174, 62));
+		this->setHSVmax(Scalar(23, 255, 157));
+		this->setColor(Scalar(0,255,255));
 			setType(name);
 	}
 }
