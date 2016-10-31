@@ -91,7 +91,8 @@ int main(int argc, char* argv[])
 		temp.copyTo( liveFeed, mask );
 		liveFeed = liveFeed(myCropROI);
 		cvtColor(liveFeed,HSV,COLOR_BGR2HSV);
-
+		liveFeed.copyTo(liveFeed1);
+		liveFeed.copyTo(liveFeed2);
 		if(doCalibrate==true){
 		// if doCalibrate == true, we go into calibration mode with sliders to find values
 		cvtColor(liveFeed,HSV,COLOR_BGR2HSV);
@@ -101,23 +102,39 @@ int main(int argc, char* argv[])
 		trackingObjectCalibration(thresholdImg,HSV,liveFeed);
 	 	}else{
 		// If we aren't in calibrate mode, these foods will be found.
-		cvtColor(liveFeed,HSV,COLOR_BGR2HSV);
-		inRange(HSV,spatula.getHSVmin(), spatula.getHSVmax(),thresholdImg);
-		morphOps(thresholdImg);
-		imshow(windowHSV,thresholdImg);
-		trackingObject(spatula,thresholdImg,HSV,liveFeed);
+		cvtColor(liveFeed1,HSV1,COLOR_BGR2HSV);
+		inRange(HSV1,Broccoli.getHSVmin(), Broccoli.getHSVmax(),thresholdImg1);
+		morphOps(thresholdImg1);
+		imshow(windowThresh1,thresholdImg1);
+		trackingObject(Broccoli,thresholdImg1,HSV1,liveFeed1);
+		char const* BroccoliChar = relayCoords(Broccoli, liveFeed1);
 
-		// Gets the coords of our spatula and returns it to the robot
-		char const* spatulaChar = relayCoords(spatula, liveFeed);
-		cout << spatulaChar << endl;
-		write(serialPort, spatulaChar, 64);
+		cvtColor(liveFeed2,HSV2,COLOR_BGR2HSV);
+		inRange(HSV2,Carrot.getHSVmin(), Carrot.getHSVmax(),thresholdImg2);
+		morphOps(thresholdImg2);
+		imshow(windowThresh2,thresholdImg2);
+		trackingObject(Carrot,thresholdImg2,HSV2,liveFeed2);
+		char const* CarrotChar = relayCoords(Carrot, liveFeed2);
 
+		if (counttest % 100 == 0 && sizeof(BroccoliChar) > 6)
+		{
+		write(serialPort, BroccoliChar, 62);
+		cout << BroccoliChar << endl;
+		}
+		if (counttest % 70 == 0 && sizeof(CarrotChar) > 6)
+		{
+			write(serialPort, CarrotChar, 62);
+			cout << CarrotChar << endl;
+		}	
+				counttest += 1;
 		}
 
-		imshow(windowOriginal,liveFeed);
+		imshow(windowOriginal1,liveFeed1);
+		imshow(windowOriginal2,liveFeed2);
 
-		waitKey(100); // Wait 5 seconds before relaying the coords again. Will not work without this,
+		waitKey(50); // Wait .5 seconds before relaying the coords again. Will not work without this,
 					  // Make 0 to run forever and not wait
+
 	}
 
 	return 0;

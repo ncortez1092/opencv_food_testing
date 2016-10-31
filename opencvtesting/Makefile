@@ -111,29 +111,29 @@ Test/fast:
 	$(MAKE) -f CMakeFiles/Test.dir/build.make CMakeFiles/Test.dir/build
 .PHONY : Test/fast
 
-objectTrackingTut.o: objectTrackingTut.cpp.o
-.PHONY : objectTrackingTut.o
+AutoColourFilter.o: AutoColourFilter.cpp.o
+.PHONY : AutoColourFilter.o
 
 # target to build an object file
-objectTrackingTut.cpp.o:
-	$(MAKE) -f CMakeFiles/Test.dir/build.make CMakeFiles/Test.dir/objectTrackingTut.cpp.o
-.PHONY : objectTrackingTut.cpp.o
+AutoColourFilter.cpp.o:
+	$(MAKE) -f CMakeFiles/Test.dir/build.make CMakeFiles/Test.dir/AutoColourFilter.cpp.o
+.PHONY : AutoColourFilter.cpp.o
 
-objectTrackingTut.i: objectTrackingTut.cpp.i
-.PHONY : objectTrackingTut.i
+AutoColourFilter.i: AutoColourFilter.cpp.i
+.PHONY : AutoColourFilter.i
 
 # target to preprocess a source file
-objectTrackingTut.cpp.i:
-	$(MAKE) -f CMakeFiles/Test.dir/build.make CMakeFiles/Test.dir/objectTrackingTut.cpp.i
-.PHONY : objectTrackingTut.cpp.i
+AutoColourFilter.cpp.i:
+	$(MAKE) -f CMakeFiles/Test.dir/build.make CMakeFiles/Test.dir/AutoColourFilter.cpp.i
+.PHONY : AutoColourFilter.cpp.i
 
-objectTrackingTut.s: objectTrackingTut.cpp.s
-.PHONY : objectTrackingTut.s
+AutoColourFilter.s: AutoColourFilter.cpp.s
+.PHONY : AutoColourFilter.s
 
 # target to generate assembly for a file
-objectTrackingTut.cpp.s:
-	$(MAKE) -f CMakeFiles/Test.dir/build.make CMakeFiles/Test.dir/objectTrackingTut.cpp.s
-.PHONY : objectTrackingTut.cpp.s
+AutoColourFilter.cpp.s:
+	$(MAKE) -f CMakeFiles/Test.dir/build.make CMakeFiles/Test.dir/AutoColourFilter.cpp.s
+.PHONY : AutoColourFilter.cpp.s
 
 # Help Target
 help:
@@ -144,9 +144,9 @@ help:
 	@echo "... Test"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
-	@echo "... objectTrackingTut.o"
-	@echo "... objectTrackingTut.i"
-	@echo "... objectTrackingTut.s"
+	@echo "... AutoColourFilter.o"
+	@echo "... AutoColourFilter.i"
+	@echo "... AutoColourFilter.s"
 .PHONY : help
 
 

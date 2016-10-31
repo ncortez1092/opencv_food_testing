@@ -6,7 +6,7 @@
 
 #IncludeRegexTransform: 
 
-/home/ncortez/Desktop/opencv_food_testing/opencvtesting/objectTrackingTut.cpp
+/home/ncortez/Desktop/opencv_food_testing/opencvtesting/AutoColourFilter.cpp
 sstream
 -
 string

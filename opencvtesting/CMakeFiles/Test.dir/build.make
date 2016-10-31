@@ -49,37 +49,37 @@ include CMakeFiles/Test.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/Test.dir/flags.make
 
-CMakeFiles/Test.dir/objectTrackingTut.cpp.o: CMakeFiles/Test.dir/flags.make
-CMakeFiles/Test.dir/objectTrackingTut.cpp.o: objectTrackingTut.cpp
+CMakeFiles/Test.dir/AutoColourFilter.cpp.o: CMakeFiles/Test.dir/flags.make
+CMakeFiles/Test.dir/AutoColourFilter.cpp.o: AutoColourFilter.cpp
 	$(CMAKE_COMMAND) -E cmake_progress_report /home/ncortez/Desktop/opencv_food_testing/opencvtesting/CMakeFiles $(CMAKE_PROGRESS_1)
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object CMakeFiles/Test.dir/objectTrackingTut.cpp.o"
-	/usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/Test.dir/objectTrackingTut.cpp.o -c /home/ncortez/Desktop/opencv_food_testing/opencvtesting/objectTrackingTut.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object CMakeFiles/Test.dir/AutoColourFilter.cpp.o"
+	/usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/Test.dir/AutoColourFilter.cpp.o -c /home/ncortez/Desktop/opencv_food_testing/opencvtesting/AutoColourFilter.cpp
 
-CMakeFiles/Test.dir/objectTrackingTut.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/Test.dir/objectTrackingTut.cpp.i"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /home/ncortez/Desktop/opencv_food_testing/opencvtesting/objectTrackingTut.cpp > CMakeFiles/Test.dir/objectTrackingTut.cpp.i
+CMakeFiles/Test.dir/AutoColourFilter.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/Test.dir/AutoColourFilter.cpp.i"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /home/ncortez/Desktop/opencv_food_testing/opencvtesting/AutoColourFilter.cpp > CMakeFiles/Test.dir/AutoColourFilter.cpp.i
 
-CMakeFiles/Test.dir/objectTrackingTut.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/Test.dir/objectTrackingTut.cpp.s"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /home/ncortez/Desktop/opencv_food_testing/opencvtesting/objectTrackingTut.cpp -o CMakeFiles/Test.dir/objectTrackingTut.cpp.s
+CMakeFiles/Test.dir/AutoColourFilter.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/Test.dir/AutoColourFilter.cpp.s"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /home/ncortez/Desktop/opencv_food_testing/opencvtesting/AutoColourFilter.cpp -o CMakeFiles/Test.dir/AutoColourFilter.cpp.s
 
-CMakeFiles/Test.dir/objectTrackingTut.cpp.o.requires:
-.PHONY : CMakeFiles/Test.dir/objectTrackingTut.cpp.o.requires
+CMakeFiles/Test.dir/AutoColourFilter.cpp.o.requires:
+.PHONY : CMakeFiles/Test.dir/AutoColourFilter.cpp.o.requires
 
-CMakeFiles/Test.dir/objectTrackingTut.cpp.o.provides: CMakeFiles/Test.dir/objectTrackingTut.cpp.o.requires
-	$(MAKE) -f CMakeFiles/Test.dir/build.make CMakeFiles/Test.dir/objectTrackingTut.cpp.o.provides.build
-.PHONY : CMakeFiles/Test.dir/objectTrackingTut.cpp.o.provides
+CMakeFiles/Test.dir/AutoColourFilter.cpp.o.provides: CMakeFiles/Test.dir/AutoColourFilter.cpp.o.requires
+	$(MAKE) -f CMakeFiles/Test.dir/build.make CMakeFiles/Test.dir/AutoColourFilter.cpp.o.provides.build
+.PHONY : CMakeFiles/Test.dir/AutoColourFilter.cpp.o.provides
 
-CMakeFiles/Test.dir/objectTrackingTut.cpp.o.provides.build: CMakeFiles/Test.dir/objectTrackingTut.cpp.o
+CMakeFiles/Test.dir/AutoColourFilter.cpp.o.provides.build: CMakeFiles/Test.dir/AutoColourFilter.cpp.o
 
 # Object files for target Test
 Test_OBJECTS = \
-"CMakeFiles/Test.dir/objectTrackingTut.cpp.o"
+"CMakeFiles/Test.dir/AutoColourFilter.cpp.o"
 
 # External object files for target Test
 Test_EXTERNAL_OBJECTS =
 
-Test: CMakeFiles/Test.dir/objectTrackingTut.cpp.o
+Test: CMakeFiles/Test.dir/AutoColourFilter.cpp.o
 Test: CMakeFiles/Test.dir/build.make
 Test: /usr/local/lib/libopencv_videostab.so.3.1.0
 Test: /usr/local/lib/libopencv_videoio.so.3.1.0
@@ -114,7 +114,7 @@ Test: CMakeFiles/Test.dir/link.txt
 CMakeFiles/Test.dir/build: Test
 .PHONY : CMakeFiles/Test.dir/build
 
-CMakeFiles/Test.dir/requires: CMakeFiles/Test.dir/objectTrackingTut.cpp.o.requires
+CMakeFiles/Test.dir/requires: CMakeFiles/Test.dir/AutoColourFilter.cpp.o.requires
 .PHONY : CMakeFiles/Test.dir/requires
 
 CMakeFiles/Test.dir/clean:

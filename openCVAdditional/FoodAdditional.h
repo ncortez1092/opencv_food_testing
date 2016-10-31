@@ -58,6 +58,7 @@ int Smin = 0;
 int Smax = 256;
 int Vmin = 0;
 int Vmax = 256;
+int counttest = 0;
 
 
 
@@ -67,23 +68,33 @@ const int FRAME_HEIGHT = 480;
 
 // Other obvious declarations
 const int MAX_NUM_OBJECTS = 50; // Max number of objects
-const int MIN_OBJECT_AREA = 20*20; // Min area of an object we will bother detecting
+const int MIN_OBJECT_AREA = 4*4; // Min area of an object we will bother detecting
 const int MAX_OBJECT_AREA = (FRAME_HEIGHT*FRAME_WIDTH) / 1.5; // Max area of an object we will detect
 
 // Window names for our program
-const string windowOriginal = "Original";
+const string windowOriginal1 = "Original1";
+const string windowOriginal2 = "Original2";
 const string windowHSV = "HSV image";
-const string windowThresh = "Thresholded Image";
+const string windowThresh = "Threshold Image";
+const string windowThresh1 = "Thresholded Image1";
+const string windowThresh2 = "Thresholded Image2";
 const string windowOps = "Morphological Operations";
 const string windowControls = "Controls";
 
 // All classes ( foods )
-Food spatula("spatula");
+Food Broccoli("Broccoli");
+Food Carrot("Carrot");
 
 // Matrix to store each frame of the webcam feed
 Mat liveFeed;
+Mat liveFeed1;
+Mat liveFeed2;
 Mat thresholdImg;
+Mat thresholdImg1;
+Mat thresholdImg2;
 Mat HSV;
+Mat HSV1;
+Mat HSV2;
 Mat gray;
 Mat temp;
 
@@ -167,6 +178,10 @@ wrt the front of the robot, facing the cookpot's face.
 		int y = theFood.getYPos();
 		int xCoord, yCoord;
 
+		string type = theFood.getType();
+		if (type == "Broccoli") {type = "b";}
+		if (type == "Carrot") {type = "c";}
+
 		// Initial shift
 		x = x - row/2;
 		y = y - col/2;
@@ -203,7 +218,7 @@ wrt the front of the robot, facing the cookpot's face.
 
 
 
-		string message = intToString(xCoord) + ", " + intToString(yCoord);
+		string message = type + ", " + intToString(xCoord) + ", " + intToString(yCoord);
 		//string message = intToString(theFood.getXPos())+ ", " + intToString(theFood.getYPos());
 		char const* pchar = message.c_str();
 		return pchar;
@@ -296,12 +311,12 @@ void trackingObjectCalibration(Mat thresholdImg,Mat HSV, Mat &liveFeed){
 				//iteration and compare it to the area in the next iteration.
 				if(area>MIN_OBJECT_AREA){
 
-					Food spatula;
+					Food Broccoli;
 
-					spatula.setXPos(moment.m10/area);	
-					spatula.setYPos(moment.m01/area);
+					Broccoli.setXPos(moment.m10/area);	
+					Broccoli.setYPos(moment.m01/area);
 				
-					Ingredients.push_back(spatula);
+					Ingredients.push_back(Broccoli);
 
 					objectFound = true;
 
@@ -311,7 +326,7 @@ void trackingObjectCalibration(Mat thresholdImg,Mat HSV, Mat &liveFeed){
 			}
 			//let user know you found an object
 			if(objectFound ==true){
-				putText(liveFeed, "Tracking", Point(0, 25), 1, 1, Scalar(0,0,255), 2);
+				putText(liveFeed, "Tracking", Point(0, 50), 1, 1, Scalar(0,0,255), 2);
 				drawObject(Ingredients,liveFeed);}
 
 		}else putText(liveFeed,"TOO MUCH NOISE! ADJUST FILTER",Point(0,50),1,2,Scalar(0,0,255),2);
@@ -347,23 +362,23 @@ void trackingObject(Food Foods, Mat thresholdImg,Mat HSV, Mat &liveFeed){
 				//iteration and compare it to the area in the next iteration.
 				if(area>MIN_OBJECT_AREA){
 
-					spatula.setXPos(moment.m10/area);	
-					spatula.setYPos(moment.m01/area);
-					spatula.setType(Foods.getType());
-					spatula.setColor(Foods.getColor());
+					Foods.setXPos(moment.m10/area);	
+					Foods.setYPos(moment.m01/area);
+					Foods.setType(Foods.getType());
+					Foods.setColor(Foods.getColor());
 				
-					Ingredients.push_back(spatula);
+					Ingredients.push_back(Foods);
 
 					objectFound = true;
 
 				}else objectFound = false;
 				if(objectFound ==true){
-					putText(liveFeed, "Tracking", Point(0, 25), 1, 1, Scalar(0,0,255), 2);
+					putText(liveFeed, "Tracking", Point(0, 50), 1, 1, Scalar(0,0,255), 2);
 					drawObject(Ingredients,liveFeed);
-					spatula.setXPos(moment.m10/area);	
-					spatula.setYPos(moment.m01/area);
-					spatula.setType(Foods.getType());
-					spatula.setColor(Foods.getColor());}
+					Foods.setXPos(moment.m10/area);	
+					Foods.setYPos(moment.m01/area);
+					Foods.setType(Foods.getType());
+					Foods.setColor(Foods.getColor());}
 
 
 			}
@@ -372,6 +387,7 @@ void trackingObject(Food Foods, Mat thresholdImg,Mat HSV, Mat &liveFeed){
 
 		}else putText(liveFeed,"TOO MUCH NOISE! ADJUST FILTER",Point(0,50),1,2,Scalar(0,0,255),2);
 	}
+
 }
 
 

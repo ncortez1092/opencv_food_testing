@@ -248,7 +248,7 @@ void morphOps(Mat &thresh){
 
 
 }
-void trackFilteredObject(int &x, int &y, Mat threshold, Mat &cameraFeed){
+void trackFilteredObject(int &x, int &y, Mat threshold, Mat &liveFeed){
 
 	Mat temp;
 	threshold.copyTo(temp);
@@ -288,15 +288,15 @@ void trackFilteredObject(int &x, int &y, Mat threshold, Mat &cameraFeed){
 			}
 			//let user know you found an object
 			if (objectFound == true){
-				putText(cameraFeed, "Tracking Object", Point(0, 50), 2, 1, Scalar(0, 255, 0), 2);
+				putText(liveFeed, "Tracking Object", Point(0, 50), 2, 1, Scalar(0, 255, 0), 2);
 				//draw object location on screen
-				drawObject(x, y, cameraFeed);
+				drawObject(x, y, liveFeed);
 				//draw largest contour
-				//drawContours(cameraFeed, contours, largestIndex, Scalar(0, 255, 255), 2);
+				//drawContours(liveFeed, contours, largestIndex, Scalar(0, 255, 255), 2);
 			}
 
 		}
-		else putText(cameraFeed, "TOO MUCH NOISE! ADJUST FILTER", Point(0, 50), 1, 2, Scalar(0, 0, 255), 2);
+		else putText(liveFeed, "TOO MUCH NOISE! ADJUST FILTER", Point(0, 50), 1, 2, Scalar(0, 0, 255), 2);
 	}
 }
 int main(int argc, char* argv[])
@@ -307,7 +307,7 @@ int main(int argc, char* argv[])
 	bool useMorphOps = true;
 	calibrationMode = true;
 	//Matrix to store each frame of the webcam feed
-	Mat cameraFeed;
+	Mat liveFeed;
 	//matrix storage for HSV image
 	Mat HSV;
 	//matrix storage for binary threshold image
@@ -317,7 +317,7 @@ int main(int argc, char* argv[])
 	//video capture object to acquire webcam feed
 	VideoCapture capture;
 	//open capture object at location zero (default location for webcam)
-	capture.open(0);
+	capture.open(1);
 	//set height and width of capture frame
 	capture.set(CV_CAP_PROP_FRAME_WIDTH, FRAME_WIDTH);
 	capture.set(CV_CAP_PROP_FRAME_HEIGHT, FRAME_HEIGHT);
@@ -326,21 +326,41 @@ int main(int argc, char* argv[])
 	//set mouse callback function to be active on "Webcam Feed" window
 	//we pass the handle to our "frame" matrix so that we can draw a rectangle to it
 	//as the user clicks and drags the mouse
-	cv::setMouseCallback(windowName, clickAndDrag_Rectangle, &cameraFeed);
+	cv::setMouseCallback(windowName, clickAndDrag_Rectangle, &liveFeed);
 	//initiate mouse move and drag to false 
 	mouseIsDragging = false;
 	mouseMove = false;
 	rectangleSelected = false;
 
-	//start an infinite loop where webcam feed is copied to cameraFeed matrix
+	//start an infinite loop where webcam feed is copied to liveFeed matrix
 	//all of our operations will be performed within this loop
 	while (1){
 		//store image to matrix
-		capture.read(cameraFeed);
+		Mat temp;
+		capture.read(temp);
+		Rect myCropROI(200,55,250,250);
+
+
+		/* // This is all used for finding the center point and the radius
+		vector<Vec3f> circles;
+		HoughCircles(gray, circles, CV_HOUGH_GRADIENT, 1, gray.rows/8, 200, 100, 0, 0 );
+		//GaussianBlur(gray,gray,Size(8,8),2,2);*/
+
+
+		cv::Mat mask = cv::Mat::zeros( temp.rows, temp.cols, CV_8UC1 );
+		Point center = Point(320, 180);
+		float radius = 115;
+		circle( mask, center, radius, Scalar(255,255,255), -1, 8, 0 ); //-1 means filled
+	//	namedWindow("test"); // debug
+	//	imshow("test", mask); // debug
+		temp.copyTo( liveFeed, mask );
+		liveFeed = liveFeed(myCropROI);
+		cvtColor(liveFeed,HSV,COLOR_BGR2HSV);
+
 		//convert frame from BGR to HSV colorspace
-		cvtColor(cameraFeed, HSV, COLOR_BGR2HSV);
+		cvtColor(liveFeed, HSV, COLOR_BGR2HSV);
 		//set HSV values from user selected region
-		recordHSV_Values(cameraFeed, HSV);
+		recordHSV_Values(liveFeed, HSV);
 		//filter HSV image between values and store filtered image to
 		//threshold matrix
 		inRange(HSV, Scalar(H_MIN, S_MIN, V_MIN), Scalar(H_MAX, S_MAX, V_MAX), threshold);
@@ -352,7 +372,7 @@ int main(int argc, char* argv[])
 		//this function will return the x and y coordinates of the
 		//filtered object
 		if (trackObjects)
-			trackFilteredObject(x, y, threshold, cameraFeed);
+			trackFilteredObject(x, y, threshold, liveFeed);
 
 		//show frames 
 		if (calibrationMode == true){
@@ -368,7 +388,7 @@ int main(int argc, char* argv[])
 			destroyWindow(windowName2);
 			destroyWindow(trackbarWindowName);
 		}
-		imshow(windowName, cameraFeed);
+		imshow(windowName, liveFeed);
 		
 
 
