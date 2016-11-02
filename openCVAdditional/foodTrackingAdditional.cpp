@@ -44,6 +44,7 @@ using namespace cv;
 
 // If we would like to calibrate our filter values, set to true.
 bool doCalibrate = false;
+int cropHeight = 280, cropWidth = 210, cropX = 180, cropY = 80; // Used for the ROI crop
 
 //====================== End Initializations =====================================================
 
@@ -69,53 +70,60 @@ int main(int argc, char* argv[])
 
 
 
-	while(1){
-		// Store what is read from camera
+	while(1)
+	{
+// ------------- We capture the video, crop it, and only focus on the pot -----------------------
 		capture.read(temp);
-		 //Get an HSV image (hue, saturation, value)
-		Rect myCropROI(200,55,250,250);
-
-
-		/* // This is all used for finding the center point and the radius
-		vector<Vec3f> circles;
-		HoughCircles(gray, circles, CV_HOUGH_GRADIENT, 1, gray.rows/8, 200, 100, 0, 0 );
-		//GaussianBlur(gray,gray,Size(8,8),2,2);*/
-
-
+		Rect myCropROI(cropX, cropY , cropHeight , cropWidth);
 		cv::Mat mask = cv::Mat::zeros( temp.rows, temp.cols, CV_8UC1 );
 		Point center = Point(320, 180);
-		float radius = 115;
+		float radius = 105;
 		circle( mask, center, radius, Scalar(255,255,255), -1, 8, 0 ); //-1 means filled
-	//	namedWindow("test"); // debug
-	//	imshow("test", mask); // debug
 		temp.copyTo( liveFeed, mask );
 		liveFeed = liveFeed(myCropROI);
-		cvtColor(liveFeed,HSV,COLOR_BGR2HSV); 
-		resize(liveFeed, liveFeed, Size(320, 280));
-	//	liveFeed.copyTo(liveFeed);
-	//	liveFeed.copyTo(liveFeed);
+		cvtColor(liveFeed,HSV,COLOR_BGR2HSV);
+		float ratio = FRAME_HEIGHT/cropHeight;
+//--------------------------------------------------------------------------------------------------
 		if(doCalibrate==true){
 		// if doCalibrate == true, we go into calibration mode with sliders to find values
-		cvtColor(liveFeed,HSV,COLOR_BGR2HSV);
+
+//------------------- This is used for finding the center point and the radius ----------------
+		vector<Vec3f> circles;
+		HoughCircles(gray, circles, CV_HOUGH_GRADIENT, 1, gray.rows/8, 200, 100, 0, 0 );
+		GaussianBlur(gray,gray,Size(8,8),2,2);
+//----- we can access these numbers using center = circles[0][0], radius = circles[0][1]----------
+		
 		inRange(HSV,Scalar(Hmin,Smin,Vmin),Scalar(Hmax,Smax,Vmax),thresholdImg);
 		morphOps(thresholdImg);
 		imshow(windowHSV,thresholdImg);
 		trackingObjectCalibration(thresholdImg,HSV,liveFeed);
+
 	 	}else{
-		// If we aren't in calibrate mode, these foods will be found.
-	 	tcflush(serialPort, TCIOFLUSH);
-		cvtColor(liveFeed,HSV,COLOR_BGR2HSV);
-		inRange(HSV,Broccoli.getHSVmin(), Broccoli.getHSVmax(),thresholdImg);
+//-------- Here we attempt to do shape recognition before moving on -------------------------------
+	 	vector<string> shapes = shapeDetection();
+	 	for (int k = 0; k < shapes.size(); k++)
+	 	{
+	 	//	cout << shapes[k];
+	 	}
+
+
+//-------------------------------------------------------------------------------------------------
+
+		tcflush(serialPort, TCIOFLUSH);
+		inRange(HSV,Bread.getHSVmin1(), Bread.getHSVmax1(),thresholdImg1);
+		inRange(HSV,Bread.getHSVmin2(), Bread.getHSVmax2(),thresholdImg2);
+		bitwise_or(thresholdImg1,thresholdImg2, thresholdImg);
 		morphOps(thresholdImg);
 		imshow(windowThresh,thresholdImg);
-		trackingObjectBroc(Broccoli,thresholdImg,HSV,liveFeed);
-		char const* BroccoliChar = relayCoords(Broccoli, liveFeed);
-		if (counttest % 60 == 0 && sizeof(BroccoliChar) > 6)
+		trackingObjectBroc(Bread,thresholdImg,HSV,liveFeed);
+		Bread.setBoarder();
+		char const* BreadChar = relayCoords(Bread, liveFeed);
+		if (counttest % 60 == 0 && sizeof(BreadChar) > 6)
 		{
-		write(serialPort, BroccoliChar, 62);
-		cout << BroccoliChar << endl;
+		write(serialPort, BreadChar, 62);
+		cout << BreadChar << endl;
 		}
-		tcflush(serialPort, TCIOFLUSH);
+		/*tcflush(serialPort, TCIOFLUSH);
 		cvtColor(liveFeed,HSV,COLOR_BGR2HSV);
 		inRange(HSV,Carrot.getHSVmin(), Carrot.getHSVmax(),thresholdImg);
 		morphOps(thresholdImg);
@@ -126,10 +134,9 @@ int main(int argc, char* argv[])
 		{
 			write(serialPort, CarrotChar, 62);
 			cout << CarrotChar << endl;
-		}	
+		}	*/
 				counttest += 1;
 		}
-
 		imshow(windowOriginal1,liveFeed);
 	//	imshow(windowOriginal2,liveFeed);
 

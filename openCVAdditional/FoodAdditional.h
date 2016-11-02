@@ -21,23 +21,42 @@ public:
 	int getYPos();
 	void setYPos(int y);
 
-	Scalar getHSVmin();
-	Scalar getHSVmax();
+	Scalar getHSVmin1();
+	Scalar getHSVmax1();
+	Scalar getHSVmin2();
+	Scalar getHSVmax2();
 
-	void setHSVmin(Scalar min);
-	void setHSVmax(Scalar max);
+	void setHSVmin1(Scalar min);
+	void setHSVmax1(Scalar max);
+	void setHSVmin2(Scalar min);
+	void setHSVmax2(Scalar max);
 
 	string getType(){return type;}
 	void setType(string t){type = t;}
 
 	Scalar getColor(){return Color;}
 	void setColor(Scalar c){Color = c;}
+
+	void setShape(string t){shape = t;}
+	string getShape(){return shape;}
+
+
+	void setBoarder();
 private:
 
 	int xPos, yPos;
-	string type;
-	cv::Scalar HSVmin,HSVmax;
+	string type, shape;
+	cv::Scalar HSVmin1,HSVmax1,HSVmin2,HSVmax2;
 	cv::Scalar Color;
+
+};
+
+class ShapeDetection
+{
+public:
+	ShapeDetection(void);
+	~ShapeDetection(void);
+	string detection(vector< vector<Point> > contours);
 
 };
 
@@ -81,23 +100,15 @@ const string windowThresh2 = "Thresholded Image2";
 const string windowOps = "Morphological Operations";
 const string windowControls = "Controls";
 
-// All classes ( foods )
-Food Broccoli("Broccoli");
+// All classes
+ShapeDetection SD;
+Food Bread("Bread");
 Food Carrot("Carrot");
 
 // Matrix to store each frame of the webcam feed
-Mat liveFeed;
-Mat liveFeed1;
-Mat liveFeed2;
-Mat thresholdImg;
-Mat thresholdImg1;
-Mat thresholdImg2;
-Mat HSV;
-Mat HSV1;
-Mat HSV2;
-Mat gray;
-Mat temp;
-
+Mat liveFeed, temp, gray;
+Mat thresholdImg, thresholdImg1, thresholdImg2, thresholdImg3, thresholdImg4, thresholdImg5, threshShape;
+Mat HSV, HSV1, HSV2, HSV3, HSV4, HSV5;
 // Function Prototypes
 
 char const* relayCoords(Food);
@@ -180,7 +191,7 @@ wrt the front of the robot, facing the cookpot's face.
 		string myChar;
 
 		string type = theFood.getType();
-		if (type == "Broccoli") {myChar = 'b';}
+		if (type == "Bread") {myChar = 'b';}
 		if (type == "Carrot") {myChar = 'c';}
 
 		// Initial shift
@@ -311,12 +322,12 @@ void trackingObjectCalibration(Mat thresholdImg,Mat HSV, Mat &liveFeed){
 				//iteration and compare it to the area in the next iteration.
 				if(area>MIN_OBJECT_AREA){
 
-					Food Broccoli;
+					Food Bread;
 
-					Broccoli.setXPos(moment.m10/area);	
-					Broccoli.setYPos(moment.m01/area);
+					Bread.setXPos(moment.m10/area);	
+					Bread.setYPos(moment.m01/area);
 				
-					Ingredients.push_back(Broccoli);
+					Ingredients.push_back(Bread);
 
 					objectFound = true;
 
@@ -363,7 +374,7 @@ void trackingObject(Food theFood, Mat thresholdImg,Mat HSV, Mat &liveFeed){
 				//iteration and compare it to the area in the next iteration.
 				if(area>MIN_OBJECT_AREA){
 
-					Broccoli.setXPos(moment.m10/area);	
+					Bread.setXPos(moment.m10/area);	
 					ptrFood->setYPos(moment.m01/area);
 					ptrFood->setType(theFood.getType());
 					ptrFood->setColor(theFood.getColor());
@@ -420,12 +431,12 @@ void trackingObjectBroc(Food theFood, Mat thresholdImg,Mat HSV, Mat &liveFeed){
 				//iteration and compare it to the area in the next iteration.
 				if(area>MIN_OBJECT_AREA){
 
-					Broccoli.setXPos(moment.m10/area);	
-					Broccoli.setYPos(moment.m01/area);
-					Broccoli.setType(theFood.getType());
-					Broccoli.setColor(theFood.getColor());
+					Bread.setXPos(moment.m10/area);	
+					Bread.setYPos(moment.m01/area);
+					Bread.setType(theFood.getType());
+					Bread.setColor(theFood.getColor());
 				
-					Ingredients.push_back(Broccoli);
+					Ingredients.push_back(Bread);
 
 					objectFound = true;
 
@@ -433,10 +444,10 @@ void trackingObjectBroc(Food theFood, Mat thresholdImg,Mat HSV, Mat &liveFeed){
 				if(objectFound ==true){
 					putText(liveFeed, "Tracking", Point(0, 50), 1, 1, Scalar(0,0,255), 2);
 					drawObject(Ingredients,liveFeed);
-					Broccoli.setXPos(moment.m10/area);	
-					Broccoli.setYPos(moment.m01/area);
-					Broccoli.setType(theFood.getType());
-					Broccoli.setColor(theFood.getColor());
+					Bread.setXPos(moment.m10/area);	
+					Bread.setYPos(moment.m01/area);
+					Bread.setType(theFood.getType());
+					Bread.setColor(theFood.getColor());
 				}
 
 
@@ -535,4 +546,48 @@ void setUpSerial()
 
 
 //==================== End Serial Initialization ============================================================
+}
+
+vector<string> shapeDetection()
+{
+		vector< vector<Point> > contours;
+		vector<Vec4i>hierarchy;
+		vector<string> Types;
+		string shapeObj;
+		cvtColor(liveFeed, gray, COLOR_BGR2GRAY);
+	 	morphOps(gray);
+	 	threshold(gray, threshShape, 60, 255, THRESH_BINARY);
+	 	findContours(threshShape, contours, hierarchy, CV_RETR_CCOMP,CV_CHAIN_APPROX_SIMPLE);
+	 	vector<Moments> moment(contours.size());
+	 	for(size_t i = 0; i < contours.size(); i++){
+	 		//for(size_t j = 0; j < contours.size(); j++)
+	 		//{
+			//	moment[i] = moments(contours[i]);
+	 			double area = moment[i].m00;
+	 			int cX = (int)(moment[i].m10/area);
+	 			int cY = (int)(moment[i].m01/area);
+	 			shapeObj = SD.detection(contours);
+	 			Types.push_back(shapeObj);
+	 			drawContours(liveFeed, contours, (cX, cY), Scalar(255,255,255), 1);
+	 			putText(liveFeed, shapeObj, Point(cX,cY), 0.5, 1,Scalar(255,255,255), 2);
+
+
+}
+return Types;
+}
+void Food::setBoarder()
+{
+	vector< vector<Point> > contours;
+	vector<Vec4i>hierarchy;
+	vector< vector<Point> > approx;
+	findContours(thresholdImg, contours, hierarchy, CV_RETR_CCOMP,CV_CHAIN_APPROX_SIMPLE);
+	vector<Moments> moment(contours.size());
+	 	for(size_t i = 0; i < contours.size(); i++){
+	 			double area = moment[i].m00;
+	 			cout << area;
+	 			int cX = (int)(moment[i].m10/area);
+	 			int cY = (int)(moment[i].m01/area);
+	 			drawContours(liveFeed, contours, (cX, cY), this->getColor(), 1);
+	 			
+	 		}
 }
