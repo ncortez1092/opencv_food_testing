@@ -49,6 +49,11 @@ void Food::setYPos(int y){
 
 }
 
+void Food::setArea(float Area)
+{
+	Food::Area = Area;
+}
+
 Scalar Food::getHSVmin1(){
 
 	return Food::HSVmin1;
@@ -98,16 +103,18 @@ ShapeDetection::~ShapeDetection()
 {
 
 }
-string ShapeDetection::detection(vector< vector<Point> > contours)
+string ShapeDetection::detection(vector<vector<Point> > contours)
 {
 	vector< Point > approx;
+	vector< Point > contours2;
+	contours2 = contours[0];
 	string shape = "Unknown";
 
-	double perimeter = arcLength(contours[0], true);
-	approxPolyDP(contours[0], approx, 0.04 * perimeter, true);
+	double perimeter = arcLength(contours2, true);
+	approxPolyDP(contours2, approx, 0.04 * perimeter, true);
 	if (approx.size() == 3) shape = "Triangle";
-	else if (approx.size() == 4)
-	{
+	else if (approx.size() == 4) shape = "Rectangle";
+	/*{
 		Rect rect = boundingRect(approx);
 		float area = rect.width/rect.height;
 		if (area >= 0.95 && area <=1.05)
@@ -115,7 +122,7 @@ string ShapeDetection::detection(vector< vector<Point> > contours)
 		shape = "Square";
 		}
 		else shape = "Rectangle";
-	}
+	}*/// Didnt want to differenetiate between the two yet
 	else if(approx.size() == 5) shape = "Pentigon";
 	else shape = "Circle";
 	return shape;

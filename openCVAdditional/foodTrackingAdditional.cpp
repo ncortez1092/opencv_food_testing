@@ -77,7 +77,7 @@ int main(int argc, char* argv[])
 		Rect myCropROI(cropX, cropY , cropHeight , cropWidth);
 		cv::Mat mask = cv::Mat::zeros( temp.rows, temp.cols, CV_8UC1 );
 		Point center = Point(320, 180);
-		float radius = 105;
+		float radius = 95;
 		circle( mask, center, radius, Scalar(255,255,255), -1, 8, 0 ); //-1 means filled
 		temp.copyTo( liveFeed, mask );
 		liveFeed = liveFeed(myCropROI);
@@ -99,51 +99,56 @@ int main(int argc, char* argv[])
 		trackingObjectCalibration(thresholdImg,HSV,liveFeed);
 
 	 	}else{
-//-------- Here we attempt to do shape recognition before moving on -------------------------------
+//-------- Here we do shape recognition before moving on -------------------------------
 	 	vector<string> shapes = shapeDetection();
+	 	int rectCount=0,circleCount=0,pentaCount=0,triCount=0;
 	 	for (int k = 0; k < shapes.size(); k++)
-	 	{
-	 	//	cout << shapes[k];
+		{
+			if(shapes[k] == "Rectangle") rectCount += 1;
+			if(shapes[k] == "Circle") circleCount += 1;
+			if(shapes[k] == "Triangle") triCount += 1;
+			if(shapes[k] == "Pentagon") pentaCount += 1;
 	 	}
-
-
 //-------------------------------------------------------------------------------------------------
-
-		tcflush(serialPort, TCIOFLUSH);
-		inRange(HSV,Bread.getHSVmin1(), Bread.getHSVmax1(),thresholdImg1);
-		inRange(HSV,Bread.getHSVmin2(), Bread.getHSVmax2(),thresholdImg2);
-		bitwise_or(thresholdImg1,thresholdImg2, thresholdImg);
-		morphOps(thresholdImg);
-		imshow(windowThresh,thresholdImg);
-		trackingObjectBroc(Bread,thresholdImg,HSV,liveFeed);
-		Bread.setBoarder();
-		char const* BreadChar = relayCoords(Bread, liveFeed);
-		if (counttest % 60 == 0 && sizeof(BreadChar) > 6)
-		{
-		write(serialPort, BreadChar, 62);
-		cout << BreadChar << endl;
+	 	if(rectCount > circleCount || rectCount > triCount || rectCount > pentaCount)
+	 	{ // If we have more rectangles than anything else, lets find out what they are
+			tcflush(serialPort, TCIOFLUSH);
+			inRange(HSV,Bread.getHSVmin1(), Bread.getHSVmax1(),thresholdImg1);
+			inRange(HSV,Bread.getHSVmin2(), Bread.getHSVmax2(),thresholdImg2);
+			bitwise_or(thresholdImg1,thresholdImg2, thresholdImg);
+			morphOps(thresholdImg);
+			imshow(windowThresh,thresholdImg);
+			//theFood = &Bread;
+			trackingObject(Bread,thresholdImg,HSV,liveFeed);
+			Bread.setBoarder();
+			char const* BreadChar = relayCoords(Bread, liveFeed);
+			if (counttest % 60 == 0 && sizeof(BreadChar) > 6)
+			{
+			write(serialPort, BreadChar, 62);
+			cout << BreadChar << endl;
+			}
 		}
-		/*tcflush(serialPort, TCIOFLUSH);
-		cvtColor(liveFeed,HSV,COLOR_BGR2HSV);
-		inRange(HSV,Carrot.getHSVmin(), Carrot.getHSVmax(),thresholdImg);
-		morphOps(thresholdImg);
-		imshow(windowThresh,thresholdImg);
-		trackingObjectCarrot(Carrot,thresholdImg,HSV,liveFeed);
-		char const* CarrotChar = relayCoords(Carrot, liveFeed);
-		if (counttest % 60 == 0 && sizeof(CarrotChar) > 6)
-		{
-			write(serialPort, CarrotChar, 62);
-			cout << CarrotChar << endl;
-		}	*/
-				counttest += 1;
+			/*tcflush(serialPort, TCIOFLUSH);
+			cvtColor(liveFeed,HSV,COLOR_BGR2HSV);
+			inRange(HSV,Carrot.getHSVmin(), Carrot.getHSVmax(),thresholdImg);
+			morphOps(thresholdImg);
+			imshow(windowThresh,thresholdImg);
+			trackingObjectCarrot(Carrot,thresholdImg,HSV,liveFeed);
+			char const* CarrotChar = relayCoords(Carrot, liveFeed);
+			if (counttest % 60 == 0 && sizeof(CarrotChar) > 6)
+			{
+				write(serialPort, CarrotChar, 62);
+				cout << CarrotChar << endl;
+			}	*/
+					counttest += 1;
+			}
+			imshow(windowOriginal1,liveFeed);
+		//	imshow(windowOriginal2,liveFeed);
+
+			waitKey(50); // Wait .5 seconds before relaying the coords again. Will not work without this,
+						  // Make 0 to run forever and not wait
+
 		}
-		imshow(windowOriginal1,liveFeed);
-	//	imshow(windowOriginal2,liveFeed);
 
-		waitKey(50); // Wait .5 seconds before relaying the coords again. Will not work without this,
-					  // Make 0 to run forever and not wait
-
-	}
-
-	return 0;
+		return 0;
 } 	

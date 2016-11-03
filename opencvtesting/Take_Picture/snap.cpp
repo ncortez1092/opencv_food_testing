@@ -73,8 +73,8 @@ int main(int argc, char* argv[])
 		imshow("Original", snap);
 		imshow("HSV", snapHSV);
 
-		imwrite("snap_230pmnolight.png",snap);
-		imwrite("snapHSV_230pmnolight.png",snapHSV);
+		imwrite("snap_7pmnolight.png",snap);
+		imwrite("snapHSV_7pmnolight.png",snapHSV);
 		if(waitKey(30) >= 0) break;
 	}
 
