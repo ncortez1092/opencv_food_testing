@@ -14,9 +14,21 @@ Food::Food(string name)
 		this->setHSVmax1(Scalar(25, 255, 157));
 		this->setHSVmin2(Scalar(15,.60*255,.55*255));
 		this->setHSVmin2(Scalar(25,.70*255,.75*255));
+		this->setHSVmin3(Scalar(16, 216, 66));
+		this->setHSVmax3(Scalar(21, 255, 105));
 		this->setColor(Scalar(47,173,131));
 			setType(name);
-	//		setBoarder();
+	}
+	if (name == "PotSticker")
+	{
+		this->setHSVmin1(Scalar());
+		this->setHSVmax1(Scalar());
+		this->setHSVmin2(Scalar());
+		this->setHSVmin2(Scalar());
+		this->setHSVmin3(Scalar());
+		this->setHSVmin3(Scalar());
+		this->setColor(Scalar(47,170,130));
+		setType(name);
 	}
 }
 
@@ -75,6 +87,16 @@ Scalar Food::getHSVmax2(){
 
 	return Food::HSVmax2;
 }
+Scalar Food::getHSVmin3(){
+
+	return Food::HSVmin2;
+
+}
+
+Scalar Food::getHSVmax3(){
+
+	return Food::HSVmax2;
+}
 
 void Food::setHSVmin1(Scalar min)
 {
@@ -92,6 +114,15 @@ void Food::setHSVmax2(Scalar max)
 {
 	Food::HSVmax2 = max;
 }
+void Food::setHSVmin3(Scalar min)
+{
+	Food::HSVmin2 = min;
+}
+void Food::setHSVmax3(Scalar max)
+{
+	Food::HSVmax2 = max;
+}
+
 
 //============================== Shape Detection class ====================================================
 

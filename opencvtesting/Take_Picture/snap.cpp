@@ -49,17 +49,17 @@ int main(int argc, char* argv[])
 	{
 		cap >> temp;
 
-		Rect myCropROI(180, 80 , 280 , 210);
+		Rect myCropROI(185, 60 , 280 , 210);
 
 
 
 
 		cv::Mat mask = cv::Mat::zeros( temp.rows, temp.cols, CV_8UC1 );
-		Point center = Point(320, 180);
-		float radius = 105;
+		Point center = Point(330, 170);
+		float radius = 100;
 		circle( mask, center, radius, Scalar(255,255,255), -1, 8, 0 ); //-1 means filled
-	//	namedWindow("test"); // debug
-	//	imshow("test", mask); // debug
+		namedWindow("test"); // debug
+		imshow("test", mask); // debug
 		temp.copyTo( snap, mask );
 		snap = snap(myCropROI);
 		cvtColor(snap,snapHSV,COLOR_BGR2HSV); 
@@ -73,8 +73,8 @@ int main(int argc, char* argv[])
 		imshow("Original", snap);
 		imshow("HSV", snapHSV);
 
-		imwrite("snap_7pmnolight.png",snap);
-		imwrite("snapHSV_7pmnolight.png",snapHSV);
+		imwrite("finishedpotStickerLight_11am_3.png",snap);
+		//imwrite("snapHSV_7pmnolight.png",snapHSV);
 		if(waitKey(30) >= 0) break;
 	}
 

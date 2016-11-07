@@ -43,8 +43,8 @@ using namespace cv;
 //==================================== Initializations ===================================================
 
 // If we would like to calibrate our filter values, set to true.
-bool doCalibrate = false;
-int cropHeight = 280, cropWidth = 210, cropX = 180, cropY = 80; // Used for the ROI crop
+bool doCalibrate = false; // 280, 210, 180, 80 works
+int cropHeight = 280, cropWidth = 210, cropX = 185, cropY = 60; // Used for the ROI crop
 
 //====================== End Initializations =====================================================
 
@@ -74,10 +74,14 @@ int main(int argc, char* argv[])
 	{
 // ------------- We capture the video, crop it, and only focus on the pot -----------------------
 		capture.read(temp);
-		Rect myCropROI(cropX, cropY , cropHeight , cropWidth);
 		cv::Mat mask = cv::Mat::zeros( temp.rows, temp.cols, CV_8UC1 );
-		Point center = Point(320, 180);
-		float radius = 95;
+		Point center = Point(330, 177);
+		float radius = 80;
+		cropX = 330 - radius;
+		cropY = 177 - radius;
+		cropHeight = 2*radius;
+		cropWidth = 2*radius;
+		Rect myCropROI(cropX, cropY , cropHeight , cropWidth);
 		circle( mask, center, radius, Scalar(255,255,255), -1, 8, 0 ); //-1 means filled
 		temp.copyTo( liveFeed, mask );
 		liveFeed = liveFeed(myCropROI);
@@ -110,23 +114,46 @@ int main(int argc, char* argv[])
 			if(shapes[k] == "Pentagon") pentaCount += 1;
 	 	}
 //-------------------------------------------------------------------------------------------------
-	 	if(rectCount > circleCount || rectCount > triCount || rectCount > pentaCount)
-	 	{ // If we have more rectangles than anything else, lets find out what they are
+	 	//if(rectCount > circleCount || rectCount > triCount || rectCount > pentaCount)
+	 	//{ // If we have more rectangles than anything else, lets find out what they are
 			tcflush(serialPort, TCIOFLUSH);
 			inRange(HSV,Bread.getHSVmin1(), Bread.getHSVmax1(),thresholdImg1);
-			inRange(HSV,Bread.getHSVmin2(), Bread.getHSVmax2(),thresholdImg2);
+			inRange(HSV,Bread.getHSVmin3(), Bread.getHSVmax3(),thresholdImg2);
+			//inRange(HSV,PotSticker.getHSVmin1(), PotSticker.getHSVmax1(),thresholdImg3);
+			//inRange(HSV,PotSticker.getHSVmin2(), PotSticker.getHSVmax2(),thresholdImg4);
 			bitwise_or(thresholdImg1,thresholdImg2, thresholdImg);
+			//bitwise_or(thresholdImg3,thresholdImg4,thresholdImg5);
 			morphOps(thresholdImg);
-			imshow(windowThresh,thresholdImg);
-			//theFood = &Bread;
+			//morphOps(thresholdImg5);
+			//imshow(windowThresh,thresholdImg5);
 			trackingObject(Bread,thresholdImg,HSV,liveFeed);
+			//trackingObject(PotSticker,thresholdImg5,HSV,liveFeed);
+			//PotSticker.setBoarder();
 			Bread.setBoarder();
 			char const* BreadChar = relayCoords(Bread, liveFeed);
-			if (counttest % 60 == 0 && sizeof(BreadChar) > 6)
+			//char const* PotStickerChar = relayCoords(PotSticker, liveFeed);
+			if (counttest % 60 == 0 && sizeof(BreadChar) > 1)
 			{
 			write(serialPort, BreadChar, 62);
 			cout << BreadChar << endl;
 			}
+			/*if(counttest % 60 == 0 && sizeof(PotStickerChar) > 6)
+			{
+				write(serialPort, PotStickerChar, 62);
+				cout << PotStickerChar << endl;
+			}*/
+		//}
+		if(circleCount > rectCount || circleCount > triCount || circleCount > pentaCount)
+		{
+
+		}
+		else if(triCount > circleCount || triCount > rectCount || triCount > pentaCount)
+		{
+
+		}
+		else
+		{
+
 		}
 			/*tcflush(serialPort, TCIOFLUSH);
 			cvtColor(liveFeed,HSV,COLOR_BGR2HSV);

@@ -28,11 +28,15 @@ public:
 	Scalar getHSVmax1();
 	Scalar getHSVmin2();
 	Scalar getHSVmax2();
+	Scalar getHSVmin3();
+	Scalar getHSVmax3();
 
 	void setHSVmin1(Scalar min);
 	void setHSVmax1(Scalar max);
 	void setHSVmin2(Scalar min);
 	void setHSVmax2(Scalar max);
+	void setHSVmin3(Scalar min);
+	void setHSVmax3(Scalar max);
 
 	string getType(){return type;}
 	void setType(string t){type = t;}
@@ -50,7 +54,7 @@ private:
 	int xPos, yPos;
 	float Area;
 	string type, shape;
-	cv::Scalar HSVmin1,HSVmax1,HSVmin2,HSVmax2;
+	cv::Scalar HSVmin1,HSVmax1,HSVmin2,HSVmax2, HSVmin3, HSVmax3;
 	cv::Scalar Color;
 
 };
@@ -91,7 +95,7 @@ const int FRAME_HEIGHT = 480;
 
 // Other obvious declarations
 const int MAX_NUM_OBJECTS = 50; // Max number of objects
-const int MIN_OBJECT_AREA = 20*20; // Min area of an object we will bother detecting
+const int MIN_OBJECT_AREA = 10*10; // Min area of an object we will bother detecting
 const int MAX_OBJECT_AREA = (FRAME_HEIGHT*FRAME_WIDTH) / 1.5; // Max area of an object we will detect
 
 // Window names for our program
@@ -108,6 +112,7 @@ const string windowControls = "Controls";
 ShapeDetection SD;
 Food Bread("Bread");
 Food Carrot("Carrot");
+Food PotSticker("PotSticker");
 //Food *theFood;
 
 // Matrix to store each frame of the webcam feed
@@ -190,47 +195,40 @@ wrt the front of the robot, facing the cookpot's face.
 // Serial after. Which is why it needs to be char const*.
 		int row = frame.rows; // x pixels, for example it will be 640 for a 640 x 480 img
 		int col = frame.cols; // y pixels, for example it will be 480 for a 640 x 480 img
-		int x = theFood.getXPos();
-		int y = theFood.getYPos();
-		int Area = (int)theFood.getArea();
+		int y = theFood.getXPos();
+		int x = theFood.getYPos();
+		float Area = theFood.getArea();
 		int xCoord, yCoord;
 		string myChar;
 
 		string type = theFood.getType();
 		if (type == "Bread") {myChar = 'b';}
-		if (type == "Carrot") {myChar = 'c';}
+		if (type == "PotSticker") {myChar = 'p';}
+		float norm = 1;
+		int x_0 = col/2;
+		int y_0 = row/2;
 
-		// Initial shift
-		x = x - row/2;
-		y = y - col/2;
-
-		// Initializing the normalization coefficients
-		double xNorm = (double)(114)/(row/2);
-		double yNorm = (double)(135)/(col/2);
-	//	double xNorm = 0.65;
-	//	double yNorm = 0.65;
-
-		if (x < 0 && y < 0) // Quadrant 1
+		if (x < x_0 && y < y_0) // Quadrant 1
 			{
-				xCoord = xNorm*x;
-				yCoord = (-1)*yNorm*y;
+				xCoord = (x - x_0)*norm;
+				yCoord = (y_0 - y)*norm;
 			}
-		else if (x > 0 && y < 0) // Quadrant 2
+		else if (x > x_0 && y < y_0) // Quadrant 2
 			{
-				xCoord = (-1)*xNorm*x;
-				yCoord = yNorm*y;
+				xCoord = (x - x_0)*norm;
+				yCoord = (y_0 - y)*norm;
 			}
-		else if (x < 0 && y > 0) // Quadrant 3
+		else if (x < x_0 && y > y_0) // Quadrant 3
 			{
-				xCoord = (-1)*xNorm*x; 
-				yCoord = yNorm*y;
+				xCoord = (x - x_0)*norm; 
+				yCoord = (y_0 - y)*norm;
 			}
-		else if (x > 0 && y > 0) // Quadrant 4
+		else if (x > x_0 && y > y_0) // Quadrant 4
 			{
-				xCoord = xNorm*x;
-				yCoord = (-1)*yNorm*y;
+				xCoord = (x - x_0)*norm;
+				yCoord = (y_0 - y)*norm;
 			}
-		else if (x == 0 && y == 0)
+		else if (x == x_0 && y == y_0)
 			{
 				xCoord = 0;
 				yCoord = 0;
@@ -563,25 +561,27 @@ vector<string> shapeDetection()
 		string shapeObj;
 		cvtColor(liveFeed, gray, COLOR_BGR2GRAY);
 	 	morphOps(gray);
-	 	threshold(gray, threshShape, 60, 255, THRESH_BINARY);
-	 	imshow("threshsape",threshShape);
+	 	threshold(gray, threshShape, 55, 255, THRESH_BINARY);
 	 	imshow("threshShape", threshShape);
+	 	//morphOps(threshShape);
 	 	findContours(threshShape, contours, hierarchy, CV_RETR_CCOMP,CV_CHAIN_APPROX_SIMPLE);
-	 	for(int index = 0; index >= 0; index = hierarchy[index][0]){
-	 		//for(size_t j = 0; j < contours.size(); j++)
-	 		//{
-				Moments moment = moments(contours[index]);
-	 			double area = moment.m00;
-	 			if (area > MIN_OBJECT_AREA)
-	 			{
-	 				int cX = (int)(moment.m10/area);
-	 				int cY = (int)(moment.m01/area);
-	 				shapeObj = SD.detection(contours);
-	 				Types.push_back(shapeObj);
-	 				//drawContours(liveFeed, contours[index], (cX, cY), Scalar(255,255,255), 1);
-	 				putText(liveFeed, shapeObj, Point(cX,cY), 1, 1,Scalar(255,255,255), 1);
-	 			}
-
+	 	if (hierarchy.size() > 0 && hierarchy.size() < MAX_NUM_OBJECTS)
+	 	{
+		 	for(int index = 0; index >= 0; index = hierarchy[index][0]){
+		 		//for(size_t j = 0; j < contours.size(); j++)
+		 		//{
+					Moments moment = moments(contours[index]);
+		 			double area = moment.m00;
+		 			if (area > MIN_OBJECT_AREA)
+		 			{
+		 				int cX = (int)(moment.m10/area);
+		 				int cY = (int)(moment.m01/area);
+		 				shapeObj = SD.detection(contours);
+		 				Types.push_back(shapeObj);
+		 				//drawContours(liveFeed, contours[index], (cX, cY), Scalar(255,255,255), 1);
+		 				putText(liveFeed, shapeObj, Point(cX,cY), 1, 1,Scalar(255,255,255), 1);
+		 			}
+		}
 }
 return Types;
 }
