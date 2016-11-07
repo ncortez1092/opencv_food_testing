@@ -104,7 +104,7 @@ int main(int argc, char* argv[])
 
 	 	}else{
 //-------- Here we do shape recognition before moving on -------------------------------
-	 	vector<string> shapes = shapeDetection();
+	 	/*vector<string> shapes = shapeDetection();
 	 	int rectCount=0,circleCount=0,pentaCount=0,triCount=0;
 	 	for (int k = 0; k < shapes.size(); k++)
 		{
@@ -112,49 +112,68 @@ int main(int argc, char* argv[])
 			if(shapes[k] == "Circle") circleCount += 1;
 			if(shapes[k] == "Triangle") triCount += 1;
 			if(shapes[k] == "Pentagon") pentaCount += 1;
-	 	}
+	 	}*/
 //-------------------------------------------------------------------------------------------------
 	 	//if(rectCount > circleCount || rectCount > triCount || rectCount > pentaCount)
 	 	//{ // If we have more rectangles than anything else, lets find out what they are
 			tcflush(serialPort, TCIOFLUSH);
-			inRange(HSV,Bread.getHSVmin1(), Bread.getHSVmax1(),thresholdImg1);
-			inRange(HSV,Bread.getHSVmin3(), Bread.getHSVmax3(),thresholdImg2);
-			//inRange(HSV,PotSticker.getHSVmin1(), PotSticker.getHSVmax1(),thresholdImg3);
-			//inRange(HSV,PotSticker.getHSVmin2(), PotSticker.getHSVmax2(),thresholdImg4);
-			bitwise_or(thresholdImg1,thresholdImg2, thresholdImg);
-			//bitwise_or(thresholdImg3,thresholdImg4,thresholdImg5);
-			morphOps(thresholdImg);
-			//morphOps(thresholdImg5);
+			//inRange(HSV,Bread.getHSVmin1(), Bread.getHSVmax1(),thresholdImg1);
+			//inRange(HSV,Bread.getHSVmin3(), Bread.getHSVmax3(),thresholdImg2);
+			inRange(HSV,PotSticker.getHSVmin1(), PotSticker.getHSVmax1(),thresholdImg3);
+			inRange(HSV,PotSticker.getHSVmin3(), PotSticker.getHSVmax3(),thresholdImg4);
+			inRange(HSV,SquareMeat.getHSVmin1(), SquareMeat.getHSVmax1(),thresholdImg5);
+			inRange(HSV,SquareMeat.getHSVmin3(), SquareMeat.getHSVmax3(),thresholdImg6);
+			//inRange(HSV,TriangleMeat.getHSVmin1(), TriangleMeat.getHSVmax1(),thresholdImg7);
+			//inRange(HSV,TriangleMeat.getHSVmin2(), TriangleMeat.getHSVmax2(),thresholdImg8);
+			//bitwise_or(thresholdImg1,thresholdImg2,thresholdImg);
+			bitwise_or(thresholdImg3,thresholdImg4,thresholdImg9);
+			bitwise_or(thresholdImg5,thresholdImg6,thresholdImg10);
+			//bitwise_or(thresholdImg7,thresholdImg8,thresholdImg11);
+			//morphOps(thresholdImg);
+			morphOps(thresholdImg9);
+			morphOps(thresholdImg10);
+			//morphOps(thresholdImg11);
 			//imshow(windowThresh,thresholdImg5);
-			trackingObject(Bread,thresholdImg,HSV,liveFeed);
-			//trackingObject(PotSticker,thresholdImg5,HSV,liveFeed);
+			//trackingObject(Bread,thresholdImg,HSV,liveFeed);
+			trackingObject(PotSticker,thresholdImg9,HSV1,liveFeed);
+			trackingObject(SquareMeat,thresholdImg10,HSV2,liveFeed);
+			//trackingObject(TriangleMeat,thresholdImg11,HSV,liveFeed);
 			//PotSticker.setBoarder();
-			Bread.setBoarder();
-			char const* BreadChar = relayCoords(Bread, liveFeed);
-			//char const* PotStickerChar = relayCoords(PotSticker, liveFeed);
-			if (counttest % 60 == 0 && sizeof(BreadChar) > 1)
-			{
-			write(serialPort, BreadChar, 62);
-			cout << BreadChar << endl;
-			}
-			/*if(counttest % 60 == 0 && sizeof(PotStickerChar) > 6)
+			//Bread.setBoarder();
+			//SquareMeat.setBoarder();
+			//TriangleMeat.setBoarder();
+			//char const* BreadChar = relayCoords(Bread, liveFeed);
+			char const* PotStickerChar = relayCoords(PotSticker, liveFeed);
+						if(counttest % 60 == 0 && sizeof(PotStickerChar) > 4)
 			{
 				write(serialPort, PotStickerChar, 62);
 				cout << PotStickerChar << endl;
+			}
+			char const* SquareMeatChar = relayCoords(SquareMeat, liveFeed);
+			if(counttest % 70 == 0 && sizeof(SquareMeatChar) > 4)
+			{
+				write(serialPort, SquareMeatChar, 62);
+				cout << SquareMeatChar << endl;
+			}
+			//char const* TriangleMeatChar = relayCoords(TriangleMeat, liveFeed);
+			/*if (counttest % 60 == 0 && sizeof(BreadChar) > 4)
+			{
+			write(serialPort, BreadChar, 62);
+			cout << BreadChar << endl;
 			}*/
 		//}
-		if(circleCount > rectCount || circleCount > triCount || circleCount > pentaCount)
-		{
+		//if(circleCount > rectCount || circleCount > triCount || circleCount > pentaCount)
+		//{
 
-		}
-		else if(triCount > circleCount || triCount > rectCount || triCount > pentaCount)
-		{
+		//}
+		//else if(triCount > circleCount || triCount > rectCount || triCount > pentaCount)
+		//{
 
-		}
-		else
-		{
+		//}
+		//else
+		//{
 
-		}
+		//}
 			/*tcflush(serialPort, TCIOFLUSH);
 			cvtColor(liveFeed,HSV,COLOR_BGR2HSV);
 			inRange(HSV,Carrot.getHSVmin(), Carrot.getHSVmax(),thresholdImg);
@@ -168,7 +187,7 @@ int main(int argc, char* argv[])
 				cout << CarrotChar << endl;
 			}	*/
 					counttest += 1;
-			}
+			
 			imshow(windowOriginal1,liveFeed);
 		//	imshow(windowOriginal2,liveFeed);
 
@@ -176,6 +195,7 @@ int main(int argc, char* argv[])
 						  // Make 0 to run forever and not wait
 
 		}
+	}
 
 		return 0;
 } 	

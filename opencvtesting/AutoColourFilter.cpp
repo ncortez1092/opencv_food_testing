@@ -338,7 +338,6 @@ int main(int argc, char* argv[])
 		//store image to matrix
 		Mat temp;
 		capture.read(temp);
-		Rect myCropROI(200,55,250,250);
 
 
 		/* // This is all used for finding the center point and the radius
@@ -348,8 +347,13 @@ int main(int argc, char* argv[])
 
 
 		cv::Mat mask = cv::Mat::zeros( temp.rows, temp.cols, CV_8UC1 );
-		Point center = Point(320, 180);
-		float radius = 115;
+		Point center = Point(330, 177);
+		float radius = 80;
+		float cropX = 330 - radius;
+		float cropY = 177 - radius;
+		float cropHeight = 2*radius;
+		float cropWidth = 2*radius;
+		Rect myCropROI(cropX, cropY , cropHeight , cropWidth);
 		circle( mask, center, radius, Scalar(255,255,255), -1, 8, 0 ); //-1 means filled
 	//	namedWindow("test"); // debug
 	//	imshow("test", mask); // debug

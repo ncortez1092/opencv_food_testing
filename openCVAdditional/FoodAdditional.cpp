@@ -21,13 +21,35 @@ Food::Food(string name)
 	}
 	if (name == "PotSticker")
 	{
+		this->setHSVmin1(Scalar(20,88,126));
+		this->setHSVmax1(Scalar(26,207,164));
+		this->setHSVmin2(Scalar(19, 163, 86));
+		this->setHSVmin2(Scalar(24,215,125));
+		this->setHSVmin3(Scalar(16,142,62));
+		this->setHSVmin3(Scalar(26,255,162));
+		this->setColor(Scalar(47,170,130));
+		setType(name);
+	}
+		if (name == "SquareMeat")
+	{
+		this->setHSVmin1(Scalar(10, 196, 61));
+		this->setHSVmax1(Scalar(16,238, 84));
+		this->setHSVmin2(Scalar(6, 185, 222));
+		this->setHSVmin2(Scalar(13,222,123));
+		this->setHSVmin3(Scalar(9,189,71));
+		this->setHSVmin3(Scalar(13,252,128));
+		this->setColor(Scalar(0,170,20));
+		setType(name);
+	}
+		if (name == "TriangleMeat")
+	{
 		this->setHSVmin1(Scalar());
 		this->setHSVmax1(Scalar());
 		this->setHSVmin2(Scalar());
 		this->setHSVmin2(Scalar());
 		this->setHSVmin3(Scalar());
 		this->setHSVmin3(Scalar());
-		this->setColor(Scalar(47,170,130));
+		this->setColor(Scalar(0,170,130));
 		setType(name);
 	}
 }

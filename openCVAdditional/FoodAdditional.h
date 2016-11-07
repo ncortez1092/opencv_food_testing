@@ -111,13 +111,16 @@ const string windowControls = "Controls";
 // All classes
 ShapeDetection SD;
 Food Bread("Bread");
-Food Carrot("Carrot");
+//Food Carrot("Carrot");
 Food PotSticker("PotSticker");
+Food SquareMeat("SquareMeat");
+//Food TriangleMeat("Triangle Meat");
 //Food *theFood;
 
 // Matrix to store each frame of the webcam feed
 Mat liveFeed, temp, gray;
-Mat thresholdImg, thresholdImg1, thresholdImg2, thresholdImg3, thresholdImg4, thresholdImg5, threshShape;
+Mat thresholdImg, thresholdImg1, thresholdImg2, thresholdImg3, thresholdImg4, thresholdImg5, thresholdImg6, thresholdImg7, thresholdImg8, threshShape;
+Mat thresholdImg9, thresholdImg10, thresholdImg11;
 Mat HSV, HSV1, HSV2, HSV3, HSV4, HSV5;
 // Function Prototypes
 
@@ -204,6 +207,8 @@ wrt the front of the robot, facing the cookpot's face.
 		string type = theFood.getType();
 		if (type == "Bread") {myChar = 'b';}
 		if (type == "PotSticker") {myChar = 'p';}
+		if (type == "SquareMeat") {myChar = 's';}
+		if (type == "TriangleMeat") {myChar = 't';}
 		float norm = 1;
 		int x_0 = col/2;
 		int y_0 = row/2;
