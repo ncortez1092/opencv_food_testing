@@ -68,8 +68,6 @@ int main(int argc, char* argv[])
 	capture.set(CV_CAP_PROP_FRAME_WIDTH,FRAME_WIDTH); // Set width
 	capture.set(CV_CAP_PROP_FRAME_HEIGHT,FRAME_HEIGHT); // Set height
 
-
-
 	while(1)
 	{
 // ------------- We capture the video, crop it, and only focus on the pot -----------------------
@@ -82,9 +80,12 @@ int main(int argc, char* argv[])
 		cropHeight = 2*radius;
 		cropWidth = 2*radius;
 		Rect myCropROI(cropX, cropY , cropHeight , cropWidth);
+		//VideoWriter video("out.avi",CV_FOURCC('X','V','I','D'),30,Size(cropWidth,cropHeight),true);
+		//video.open("out.avi",CV_FOURCC('X','V','I','D'),30,Size(cropWidth,cropHeight),true);
 		circle( mask, center, radius, Scalar(255,255,255), -1, 8, 0 ); //-1 means filled
 		temp.copyTo( liveFeed, mask );
 		liveFeed = liveFeed(myCropROI);
+		resize(liveFeed, liveFeed, Size(400,400));
 		cvtColor(liveFeed,HSV,COLOR_BGR2HSV);
 		float ratio = FRAME_HEIGHT/cropHeight;
 //--------------------------------------------------------------------------------------------------
@@ -120,9 +121,9 @@ int main(int argc, char* argv[])
 			//inRange(HSV,Bread.getHSVmin1(), Bread.getHSVmax1(),thresholdImg1);
 			//inRange(HSV,Bread.getHSVmin3(), Bread.getHSVmax3(),thresholdImg2);
 			inRange(HSV,PotSticker.getHSVmin1(), PotSticker.getHSVmax1(),thresholdImg3);
-			inRange(HSV,PotSticker.getHSVmin3(), PotSticker.getHSVmax3(),thresholdImg4);
-			inRange(HSV,SquareMeat.getHSVmin1(), SquareMeat.getHSVmax1(),thresholdImg5);
-			inRange(HSV,SquareMeat.getHSVmin3(), SquareMeat.getHSVmax3(),thresholdImg6);
+			inRange(HSV,PotSticker.getHSVmin2(), PotSticker.getHSVmax2(),thresholdImg4);
+			inRange(HSV,Meat.getHSVmin1(), Meat.getHSVmax1(),thresholdImg5);
+			inRange(HSV,Meat.getHSVmin3(), Meat.getHSVmax3(),thresholdImg6);
 			//inRange(HSV,TriangleMeat.getHSVmin1(), TriangleMeat.getHSVmax1(),thresholdImg7);
 			//inRange(HSV,TriangleMeat.getHSVmin2(), TriangleMeat.getHSVmax2(),thresholdImg8);
 			//bitwise_or(thresholdImg1,thresholdImg2,thresholdImg);
@@ -136,24 +137,24 @@ int main(int argc, char* argv[])
 			//imshow(windowThresh,thresholdImg5);
 			//trackingObject(Bread,thresholdImg,HSV,liveFeed);
 			trackingObject(PotSticker,thresholdImg9,HSV1,liveFeed);
-			trackingObject(SquareMeat,thresholdImg10,HSV2,liveFeed);
+			trackingObject(Meat,thresholdImg10,HSV2,liveFeed);
 			//trackingObject(TriangleMeat,thresholdImg11,HSV,liveFeed);
 			//PotSticker.setBoarder();
 			//Bread.setBoarder();
-			//SquareMeat.setBoarder();
+			//Meat.setBoarder();
 			//TriangleMeat.setBoarder();
 			//char const* BreadChar = relayCoords(Bread, liveFeed);
 			char const* PotStickerChar = relayCoords(PotSticker, liveFeed);
-						if(counttest % 60 == 0 && sizeof(PotStickerChar) > 4)
+						if(counttest % 150 == 0 && sizeof(PotStickerChar) > 4)
 			{
 				write(serialPort, PotStickerChar, 62);
 				cout << PotStickerChar << endl;
 			}
-			char const* SquareMeatChar = relayCoords(SquareMeat, liveFeed);
-			if(counttest % 70 == 0 && sizeof(SquareMeatChar) > 4)
+			char const* MeatChar = relayCoords(Meat, liveFeed);
+			if(counttest % 200 == 0 && sizeof(MeatChar) > 4)
 			{
-				write(serialPort, SquareMeatChar, 62);
-				cout << SquareMeatChar << endl;
+				write(serialPort, MeatChar, 62);
+				cout << MeatChar << endl;
 			}
 			//char const* TriangleMeatChar = relayCoords(TriangleMeat, liveFeed);
 			/*if (counttest % 60 == 0 && sizeof(BreadChar) > 4)
@@ -186,11 +187,12 @@ int main(int argc, char* argv[])
 				write(serialPort, CarrotChar, 62);
 				cout << CarrotChar << endl;
 			}	*/
-					counttest += 1;
-			
+			counttest += 1;
+			//video.write(liveFeed);
 			imshow(windowOriginal1,liveFeed);
 		//	imshow(windowOriginal2,liveFeed);
 
+        
 			waitKey(50); // Wait .5 seconds before relaying the coords again. Will not work without this,
 						  // Make 0 to run forever and not wait
 

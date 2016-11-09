@@ -21,24 +21,24 @@ Food::Food(string name)
 	}
 	if (name == "PotSticker")
 	{
-		this->setHSVmin1(Scalar(20,88,126));
-		this->setHSVmax1(Scalar(26,207,164));
-		this->setHSVmin2(Scalar(19, 163, 86));
-		this->setHSVmin2(Scalar(24,215,125));
-		this->setHSVmin3(Scalar(16,142,62));
-		this->setHSVmin3(Scalar(26,255,162));
+		this->setHSVmin1(Scalar(18,195,94));
+		this->setHSVmax1(Scalar(24,255,159));
+		this->setHSVmin2(Scalar(20, 138, 66));
+		this->setHSVmin2(Scalar(26,255,140));
+		this->setHSVmin3(Scalar(18,187,65));
+		this->setHSVmin3(Scalar(24,255,176));
 		this->setColor(Scalar(47,170,130));
 		setType(name);
 	}
-		if (name == "SquareMeat")
+		if (name == "Meat")
 	{
-		this->setHSVmin1(Scalar(10, 196, 61));
-		this->setHSVmax1(Scalar(16,238, 84));
-		this->setHSVmin2(Scalar(6, 185, 222));
-		this->setHSVmin2(Scalar(13,222,123));
-		this->setHSVmin3(Scalar(9,189,71));
-		this->setHSVmin3(Scalar(13,252,128));
-		this->setColor(Scalar(0,170,20));
+		this->setHSVmin1(Scalar(6, 211, 44));
+		this->setHSVmax1(Scalar(14,255, 84));
+		this->setHSVmin2(Scalar(10, 223, 107));
+		this->setHSVmin2(Scalar(14,255,132));
+		this->setHSVmin3(Scalar(7,192,55));
+		this->setHSVmin3(Scalar(12,255,89));
+		this->setColor(Scalar(0,10,200));
 		setType(name);
 	}
 		if (name == "TriangleMeat")

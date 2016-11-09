@@ -95,7 +95,7 @@ const int FRAME_HEIGHT = 480;
 
 // Other obvious declarations
 const int MAX_NUM_OBJECTS = 50; // Max number of objects
-const int MIN_OBJECT_AREA = 10*10; // Min area of an object we will bother detecting
+const int MIN_OBJECT_AREA = 30*20; // Min area of an object we will bother detecting
 const int MAX_OBJECT_AREA = (FRAME_HEIGHT*FRAME_WIDTH) / 1.5; // Max area of an object we will detect
 
 // Window names for our program
@@ -113,7 +113,7 @@ ShapeDetection SD;
 Food Bread("Bread");
 //Food Carrot("Carrot");
 Food PotSticker("PotSticker");
-Food SquareMeat("SquareMeat");
+Food Meat("Meat");
 //Food TriangleMeat("Triangle Meat");
 //Food *theFood;
 
@@ -133,6 +133,7 @@ void morphOps(Mat&);
 void trackingObjectCalibration(Mat, Mat, Mat &);
 void trackingObject(Food& , Mat, Mat, Mat &);
 void setUpSerial();
+string floatToString(float);
 
 //====================== End Initializations =====================================================
 
@@ -207,9 +208,9 @@ wrt the front of the robot, facing the cookpot's face.
 		string type = theFood.getType();
 		if (type == "Bread") {myChar = 'b';}
 		if (type == "PotSticker") {myChar = 'p';}
-		if (type == "SquareMeat") {myChar = 's';}
+		if (type == "Meat") {myChar = 's';}
 		if (type == "TriangleMeat") {myChar = 't';}
-		float norm = 1;
+		float norm = 0.50;
 		int x_0 = col/2;
 		int y_0 = row/2;
 
@@ -238,11 +239,20 @@ wrt the front of the robot, facing the cookpot's face.
 				xCoord = 0;
 				yCoord = 0;
 			}
-		Area = Area/(280*210); // This will be a percentage relative to the area of the pot
+		float scale = frame.rows*frame.cols;
+		Area = Area/(scale-scale/6); // This will be a percentage relative to the area of the pot
+		Area = (int)100*Area;
+		//Area = (int)(Area*100)/100.0F;
 		string message = myChar + ", " + intToString(xCoord) + ", " + intToString(yCoord) + ", " + intToString(Area);
 		//string message = intToString(theFood.getXPos())+ ", " + intToString(theFood.getYPos());
 		char const* pchar = message.c_str();
 		return pchar;
+}
+string floatToString(float number)
+{
+	stringstream s;
+	s << number;
+	return s.str();
 }
 
 string intToString(int number){
@@ -282,7 +292,9 @@ void drawObject(vector<Food> theFood, Mat &frame){
 
 	cv::circle(frame,cv::Point(theFood.at(i).getXPos(),theFood.at(i).getYPos()),10,cv::Scalar(0,100,100));
 	cv::putText(frame,intToString(theFood.at(i).getXPos())+ " , " + intToString(theFood.at(i).getYPos()),cv::Point(theFood.at(i).getXPos(),theFood.at(i).getYPos()+20),1,1,theFood.at(i).getColor());
-	cv::putText(frame,theFood.at(i).getType(),cv::Point(theFood.at(i).getXPos(),theFood.at(i).getYPos()-30),1,2,theFood.at(i).getColor(), 2);
+	cv::putText(frame,theFood.at(i).getType(),cv::Point(theFood.at(i).getXPos(),theFood.at(i).getYPos()-30),3,1,theFood.at(i).getColor(), 2);
+	Rect rect(theFood.at(i).getXPos() - sqrt(theFood.at(i).getArea()/2), theFood.at(i).getYPos() - sqrt(theFood.at(i).getArea()/2), sqrt(3*theFood.at(i).getArea()), sqrt(3*theFood.at(i).getArea()));
+	rectangle(liveFeed,rect,theFood.at(i).getColor());
 	}
 
 
@@ -374,7 +386,7 @@ void trackingObject(Food& theFood, Mat thresholdImg,Mat HSV, Mat &liveFeed){
 			for (int index = 0; index >= 0; index = hierarchy[index][0]) {
 
 				Moments moment = moments((cv::Mat)contours[index]);
-				double area = moment.m00;
+				float area = moment.m00;
 
 				//if the area is less than 20 px by 20px then it is probably just noise
 				//if the area is the same as the 3/2 of the image size, probably just a bad filter
