@@ -59,6 +59,8 @@ int main(int argc, char* argv[])
 		Foodies.push_back(Name);
 		LocalHSVMins.push_back(Scalar(0,0,0));
 		LocalHSVMaxs.push_back(Scalar(0,0,0));
+		//Mat temp;
+		//ThresholdImgs1.push_back(temp);
 	}
 	if(doCalibrate){
 		//create slider bars for HSV filtering
@@ -154,17 +156,20 @@ as Raw, medium, and finished. Then we can save it and have 3 sub-classes of each
 				storeNewFoods(i);
 				i++;
 				}
-			}
-			for (int i = 0; i < Foodies.size(); i++)
+				for (int i = 0; i < Foodies.size(); i++)
 				{
 					Foodies.at(i).setHSVmin1(LocalHSVMins[i]);
 					Foodies.at(i).setHSVmax1(LocalHSVMaxs[i]);
 					Foodies.at(i).setType(LocalNames[i]);
 					inRange(HSV,Foodies.at(i).getHSVmin1(),Foodies.at(i).getHSVmax1(), thresholdImg);
-					trackingObject(Foodies.at(i), thresholdImg, HSV, liveFeed);
-					imshow(windowOriginal1,liveFeed);
-					waitKey(50);
+					morphOps(thresholdImg);
+					ThresholdImgs1.push_back(thresholdImg);
 				}
+			}
+			trackingObject(Foodies, ThresholdImgs1, HSV, liveFeed);
+			imshow(windowOriginal1,liveFeed);
+			imshow(windowOriginal2,thresholdImg);
+			waitKey(50);
 			//inRange(HSV,Bread.getHSVmin1(), Bread.getHSVmax1(),thresholdImg1);
 			//inRange(HSV,Bread.getHSVmin3(), Bread.getHSVmax3(),thresholdImg2);
 			//inRange(HSV,PotSticker.getHSVmin1(), PotSticker.getHSVmax1(),thresholdImg3);

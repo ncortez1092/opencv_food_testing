@@ -392,64 +392,66 @@ void trackingObjectCalibration(Mat thresholdImg,Mat HSV, Mat &liveFeed){
 	}
 }
 
-void trackingObject(Food& theFood, Mat thresholdImg,Mat HSV, Mat &liveFeed){
-	vector<Food> Ingredients;
+void trackingObject(vector<Food> theFood, vector<Mat> thresholdImg,Mat HSV, Mat &liveFeed){
+	//vector<Food> Ingredients;
+for (int i = 0; i < theFood.size(); i++)
+	{
+		Mat tempImg;
+		thresholdImg.at(i).copyTo(tempImg);
+		//these two vectors needed for output of findContours
+		vector< vector<Point> > contours;
+		vector<Vec4i> hierarchy;
+		//find contours of filtered image using openCV findContours function
+		findContours(tempImg,contours,hierarchy,CV_RETR_CCOMP,CV_CHAIN_APPROX_SIMPLE );
+		//use moments method to find our filtered object
+		double refArea = 0;
+		bool objectFound = false;
+		if (hierarchy.size() > 0) 
+		{
+			int num_of_Objects = hierarchy.size();
+			//if number of objects greater than MAX_NUM_OBJECTS we have a noisy filter
+			if(num_of_Objects<MAX_NUM_OBJECTS)
+			{
+				for (int index = 0; index >= 0; index = hierarchy[index][0]) 
+				{
 
-	Mat tempImg;
-	thresholdImg.copyTo(tempImg);
-	//these two vectors needed for output of findContours
-	vector< vector<Point> > contours;
-	vector<Vec4i> hierarchy;
-	//find contours of filtered image using openCV findContours function
-	findContours(tempImg,contours,hierarchy,CV_RETR_CCOMP,CV_CHAIN_APPROX_SIMPLE );
-	//use moments method to find our filtered object
-	double refArea = 0;
-	bool objectFound = false;
-	if (hierarchy.size() > 0) {
-		int num_of_Objects = hierarchy.size();
-		//if number of objects greater than MAX_NUM_OBJECTS we have a noisy filter
-		if(num_of_Objects<MAX_NUM_OBJECTS){
-			for (int index = 0; index >= 0; index = hierarchy[index][0]) {
+					Moments moment = moments((cv::Mat)contours[index]);
+					float area = moment.m00;
 
-				Moments moment = moments((cv::Mat)contours[index]);
-				float area = moment.m00;
+					//if the area is less than 20 px by 20px then it is probably just noise
+					//if the area is the same as the 3/2 of the image size, probably just a bad filter
+					//we only want the object with the largest area so we safe a reference area each
+					//iteration and compare it to the area in the next iteration.
+					if(area>MIN_OBJECT_AREA)
+					{
 
-				//if the area is less than 20 px by 20px then it is probably just noise
-				//if the area is the same as the 3/2 of the image size, probably just a bad filter
-				//we only want the object with the largest area so we safe a reference area each
-				//iteration and compare it to the area in the next iteration.
-				if(area>MIN_OBJECT_AREA){
+						theFood.at(i).setArea(area);
+						theFood.at(i).setXPos(moment.m10/area);	
+						theFood.at(i).setYPos(moment.m01/area);
+						//theFood.at(i).setType(theFood.getType());
+						//theFood.at(i).setColor(theFood.getColor());
+					
+						//Ingredients.push_back(theFood);
 
-					theFood.setArea(area);
-					theFood.setXPos(moment.m10/area);	
-					theFood.setYPos(moment.m01/area);
-					theFood.setType(theFood.getType());
-					theFood.setColor(theFood.getColor());
-				
-					Ingredients.push_back(theFood);
+						objectFound = true;
 
-					objectFound = true;
-
-				}else objectFound = false;
-				if(objectFound == true){
-					putText(liveFeed, "Object Found", Point(0, 50), 1, 1, Scalar(0,0,255), 2);
-					drawObject(Ingredients,liveFeed);
-					theFood.setXPos(moment.m10/area);	
-					theFood.setYPos(moment.m01/area);
-					theFood.setType(theFood.getType());
-					theFood.setColor(theFood.getColor());}
-
-
-			}
-			//let user know you found an object
-
-
-		}else putText(liveFeed,"TOO MUCH NOISE! ADJUST FILTER",Point(0,50),1,2,Scalar(0,0,255),2);
+					}
+					else objectFound = false;
+					if(objectFound == true)
+					{
+						putText(liveFeed, "Object Found", Point(0, 50), 1, 1, Scalar(0,0,255), 2);
+						drawObject(theFood,liveFeed);
+						//theFood.setXPos(moment.m10/area);	
+						//theFood.setYPos(moment.m01/area);
+						//theFood.setType(theFood.getType());
+						//theFood.setColor(theFood.getColor());}
+					}
+					else putText(liveFeed,"TOO MUCH NOISE! ADJUST FILTER",Point(0,50),1,2,Scalar(0,0,255),2);
+		}
 	}
-
 }
-
-
+}
+}
 void setUpSerial()
 {
 //==================== Serial Initialization =============================================================
@@ -633,7 +635,7 @@ void storeNewFoods(int i)
 						imshow(windowOriginal1,liveFeed);
 						recordHSV(liveFeed, HSV);
 						inRange(HSV, Scalar(Hmin, Smin, Vmin), Scalar(Hmax,Smax,Vmax), thresholdImg);
-						trackingObject(Foodies.at(i),thresholdImg,HSV,liveFeed);
+						//trackingObject(Foodies.at(i),thresholdImg,HSV,liveFeed);
 						int key = waitKey(300);
 						if (key == 27 | key == 'q' | key == 'Q') break;
 					}
