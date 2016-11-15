@@ -1,5 +1,16 @@
 #pragma once
 #include <string>
+#include <fstream>
+#include <iostream>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <termios.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sstream>
+#include <math.h>
+#include <time.h>
 #include "opencv2/opencv.hpp"
 #include "opencv2/highgui.hpp"
 using namespace std;
@@ -78,6 +89,9 @@ static const char* portName = "/dev/ttyACM0";
 	int serialPort;
 	struct termios portOptions;
 
+
+bool ifClicked, mouseHasMoved, rectangleIsSelected;
+
 //These are used for HSV detection, and will be used on our trackbars
 int Hmin = 0;
 int Hmax = 256;
@@ -86,7 +100,10 @@ int Smax = 256;
 int Vmin = 0;
 int Vmax = 256;
 int counttest = 0;
-
+int ingredientNum;
+float HSVmintemp1, HSVmintemp2, HSVmintemp3, HSVmaxtemp1, HSVmaxtemp2, HSVmaxtemp3;
+vector<int> H_ROI_ALLVALUES, S_ROI_ALLVALUES, V_ROI_ALLVALUES;
+vector<Scalar> HSVMins, HSVMaxs, LocalHSVMins, LocalHSVMaxs;
 
 
 // Size of the webcam feed
@@ -95,7 +112,7 @@ const int FRAME_HEIGHT = 480;
 
 // Other obvious declarations
 const int MAX_NUM_OBJECTS = 50; // Max number of objects
-const int MIN_OBJECT_AREA = 30*20; // Min area of an object we will bother detecting
+const int MIN_OBJECT_AREA = 40*40; // Min area of an object we will bother detecting
 const int MAX_OBJECT_AREA = (FRAME_HEIGHT*FRAME_WIDTH) / 1.5; // Max area of an object we will detect
 
 // Window names for our program
@@ -107,21 +124,28 @@ const string windowThresh1 = "Thresholded Image1";
 const string windowThresh2 = "Thresholded Image2";
 const string windowOps = "Morphological Operations";
 const string windowControls = "Controls";
+char Name[20];
+string gline;
+vector<string> Names, LocalNames;
+vector<bool> checkIfOnList;
 
 // All classes
 ShapeDetection SD;
 Food Bread("Bread");
-//Food Carrot("Carrot");
+Food Carrot("Carrot");
+Food Broccoli("Broccoli");
 Food PotSticker("PotSticker");
 Food Meat("Meat");
-//Food TriangleMeat("Triangle Meat");
-//Food *theFood;
 
 // Matrix to store each frame of the webcam feed
 Mat liveFeed, temp, gray;
 Mat thresholdImg, thresholdImg1, thresholdImg2, thresholdImg3, thresholdImg4, thresholdImg5, thresholdImg6, thresholdImg7, thresholdImg8, threshShape;
 Mat thresholdImg9, thresholdImg10, thresholdImg11;
-Mat HSV, HSV1, HSV2, HSV3, HSV4, HSV5;
+Mat HSV;
+vector<Mat> ThresholdImgs1, ThresholdImgs2, ThresholdImgs3, ThresholdImgs4;
+vector<Scalar> HSVMINS, HSVMAXS;
+Point initialClickPoint, endClickPoint;
+Rect rectangleROI;
 // Function Prototypes
 
 char const* relayCoords(Food);
@@ -206,6 +230,8 @@ wrt the front of the robot, facing the cookpot's face.
 		string myChar;
 
 		string type = theFood.getType();
+		if (type == "Broccoli") {myChar = 'q';}
+		if (type == "Carrot") {myChar = 'c';}
 		if (type == "Bread") {myChar = 'b';}
 		if (type == "PotSticker") {myChar = 'p';}
 		if (type == "Meat") {myChar = 's';}
@@ -257,7 +283,6 @@ string floatToString(float number)
 
 string intToString(int number){
 
-	// This will convert any integers into strings for our coordinate relay
 
 	stringstream s;
 	s << number;
@@ -265,7 +290,6 @@ string intToString(int number){
 }
 void createTrackbars(){
 
-	// Makes trackbars
 
 	namedWindow(windowControls,0);
 
@@ -285,7 +309,6 @@ void createTrackbars(){
 }
 void drawObject(vector<Food> theFood, Mat &frame){
 
-	// This creates the circle and tracks it
 
 	for(int i=0; i < theFood.size(); i++)
 	{
@@ -422,124 +445,7 @@ void trackingObject(Food& theFood, Mat thresholdImg,Mat HSV, Mat &liveFeed){
 	}
 
 }
-/*
-void trackingObjectBroc(Food theFood, Mat thresholdImg,Mat HSV, Mat &liveFeed){
-	Food *theFood;
-	theFood = &theFood;
-	vector<Food> Ingredients;
 
-	Mat tempImg;
-	thresholdImg.copyTo(tempImg);
-	//these two vectors needed for output of findContours
-	vector< vector<Point> > contours;
-	vector<Vec4i> hierarchy;
-	//find contours of filtered image using openCV findContours function
-	findContours(tempImg,contours,hierarchy,CV_RETR_CCOMP,CV_CHAIN_APPROX_SIMPLE );
-	//use moments method to find our filtered object
-	double refArea = 0;
-	bool objectFound = false;
-	if (hierarchy.size() > 0) {
-		int num_of_Objects = hierarchy.size();
-		//if number of objects greater than MAX_NUM_OBJECTS we have a noisy filter
-		if(num_of_Objects<MAX_NUM_OBJECTS){
-			for (int index = 0; index >= 0; index = hierarchy[index][0]) {
-
-				Moments moment = moments((cv::Mat)contours[index]);
-				double area = moment.m00;
-
-				//if the area is less than 20 px by 20px then it is probably just noise
-				//if the area is the same as the 3/2 of the image size, probably just a bad filter
-				//we only want the object with the largest area so we safe a reference area each
-				//iteration and compare it to the area in the next iteration.
-				if(area>MIN_OBJECT_AREA){
-
-					Bread.setXPos(moment.m10/area);	
-					Bread.setYPos(moment.m01/area);
-					Bread.setType(theFood.getType());
-					Bread.setColor(theFood.getColor());
-				
-					Ingredients.push_back(Bread);
-
-					objectFound = true;
-
-				}else objectFound = false;
-				if(objectFound ==true){
-					putText(liveFeed, "Tracking", Point(0, 50), 1, 1, Scalar(0,0,255), 2);
-					drawObject(Ingredients,liveFeed);
-					Bread.setXPos(moment.m10/area);	
-					Bread.setYPos(moment.m01/area);
-					Bread.setType(theFood.getType());
-					Bread.setColor(theFood.getColor());
-				}
-
-
-			}
-			//let user know you found an object
-
-
-		}else putText(liveFeed,"TOO MUCH NOISE! ADJUST FILTER",Point(0,50),1,2,Scalar(0,0,255),2);
-	}
-
-}
-void trackingObjectCarrot(Food theFood, Mat thresholdImg,Mat HSV, Mat &liveFeed){
-	Food *theFood;
-	theFood = &theFood;
-	vector<Food> Ingredients;
-
-	Mat tempImg;
-	thresholdImg.copyTo(tempImg);
-	//these two vectors needed for output of findContours
-	vector< vector<Point> > contours;
-	vector<Vec4i> hierarchy;
-	//find contours of filtered image using openCV findContours function
-	findContours(tempImg,contours,hierarchy,CV_RETR_CCOMP,CV_CHAIN_APPROX_SIMPLE );
-	//use moments method to find our filtered object
-	double refArea = 0;
-	bool objectFound = false;
-	if (hierarchy.size() > 0) {
-		int num_of_Objects = hierarchy.size();
-		//if number of objects greater than MAX_NUM_OBJECTS we have a noisy filter
-		if(num_of_Objects<MAX_NUM_OBJECTS){
-			for (int index = 0; index >= 0; index = hierarchy[index][0]) {
-
-				Moments moment = moments((cv::Mat)contours[index]);
-				double area = moment.m00;
-
-				//if the area is less than 20 px by 20px then it is probably just noise
-				//if the area is the same as the 3/2 of the image size, probably just a bad filter
-				//we only want the object with the largest area so we safe a reference area each
-				//iteration and compare it to the area in the next iteration.
-				if(area>MIN_OBJECT_AREA){
-
-					Carrot.setXPos(moment.m10/area);	
-					Carrot.setYPos(moment.m01/area);
-					Carrot.setType(theFood.getType());
-					Carrot.setColor(theFood.getColor());
-				
-					Ingredients.push_back(Carrot);
-
-					objectFound = true;
-
-				}else objectFound = false;
-				if(objectFound ==true){
-					putText(liveFeed, "Tracking", Point(0, 50), 1, 1, Scalar(0,0,255), 2);
-					drawObject(Ingredients,liveFeed);
-					Carrot.setXPos(moment.m10/area);	
-					Carrot.setYPos(moment.m01/area);
-					Carrot.setType(theFood.getType());
-					Carrot.setColor(theFood.getColor());
-				}
-
-
-			}
-			//let user know you found an object
-
-
-		}else putText(liveFeed,"TOO MUCH NOISE! ADJUST FILTER",Point(0,50),1,2,Scalar(0,0,255),2);
-	}
-
-}
-*/
 
 void setUpSerial()
 {
@@ -569,6 +475,120 @@ void setUpSerial()
 
 //==================== End Serial Initialization ============================================================
 }
+
+void makeCalibrationRectangle(int event, int x, int y, int flags, void* userdata)
+{
+	Mat* liveFeed = (Mat*)userdata;
+
+		if (event == CV_EVENT_LBUTTONDOWN && ifClicked == false)
+		{
+			//keep track of initial point clicked
+			initialClickPoint = cv::Point(x, y);
+			//user has begun dragging the mouse
+			ifClicked = true;
+		}
+		/* user is dragging the mouse */
+		if (event == CV_EVENT_MOUSEMOVE && ifClicked == true)
+		{
+			//keep track of current mouse point
+			endClickPoint = cv::Point(x, y);
+			//user has moved the mouse while clicking and dragging
+			mouseHasMoved = true;
+		}
+		/* user has released left button */
+		if (event == CV_EVENT_LBUTTONUP && ifClicked == true)
+		{
+			//set rectangle ROI to the rectangle that the user has selected
+			rectangleROI = Rect(initialClickPoint, endClickPoint);
+
+			//reset boolean variables
+			ifClicked = false;
+			mouseHasMoved = false;
+			rectangleIsSelected = true;
+		}
+
+		if (event == CV_EVENT_RBUTTONDOWN)
+		{
+			Hmin = 0;
+			Smin = 0;
+			Vmin = 0;
+			Hmax = 255;
+			Smax = 255;
+			Vmax = 255;
+
+		}
+		if (event == CV_EVENT_MBUTTONDOWN)
+		{
+			//Add code to save the rectangle into a pushbacked vector
+		}
+
+}
+
+
+void recordHSV(Mat frame, Mat HSVCalibration)
+{
+	if (mouseHasMoved == false && rectangleIsSelected == true){
+		
+		//clear previous vector values
+		if (H_ROI_ALLVALUES.size()>0) H_ROI_ALLVALUES.clear();
+		if (S_ROI_ALLVALUES.size()>0) S_ROI_ALLVALUES.clear();
+		if (V_ROI_ALLVALUES.size()>0 )V_ROI_ALLVALUES.clear();
+		//if the rectangle has no width or height (user has only dragged a line) then we don't try to iterate over the width or height
+		if (rectangleROI.width<1 || rectangleROI.height<1) cout << "Please drag a rectangle, not a line" << endl;
+		else{
+			for (int i = rectangleROI.x; i<rectangleROI.x + rectangleROI.width; i++){
+				//iterate through both x and y direction and save HSV values at each and every point
+				for (int j = rectangleROI.y; j<rectangleROI.y + rectangleROI.height; j++){
+					//save HSV value at this point
+					H_ROI_ALLVALUES.push_back((int)HSVCalibration.at<cv::Vec3b>(j, i)[0]);
+					S_ROI_ALLVALUES.push_back((int)HSVCalibration.at<cv::Vec3b>(j, i)[1]);
+					V_ROI_ALLVALUES.push_back((int)HSVCalibration.at<cv::Vec3b>(j, i)[2]);
+				}
+			}
+		}
+		//reset rectangleIsSelected so user can select another region if necessary
+		rectangleIsSelected = false;
+		//set min and max HSV values from min and max elements of each array
+					
+		if (H_ROI_ALLVALUES.size()>0){
+			//NOTE: min_element and max_element return iterators so we must dereference them with "*"
+			Hmin = *std::min_element(H_ROI_ALLVALUES.begin(), H_ROI_ALLVALUES.end());
+			Hmax = *std::max_element(H_ROI_ALLVALUES.begin(), H_ROI_ALLVALUES.end());
+			cout << "Minimum Hue Value: " << Hmin << endl;
+			cout << "Maximum Hue Value:  " << Hmax << endl;
+		}
+		if (S_ROI_ALLVALUES.size()>0){
+			Smin = *std::min_element(S_ROI_ALLVALUES.begin(), S_ROI_ALLVALUES.end());
+			Smax = *std::max_element(S_ROI_ALLVALUES.begin(), S_ROI_ALLVALUES.end());
+			cout << "Minimum Saturation Value: " << Smin << endl;
+			cout << "Maximum Saturation Value: " << Smax << endl;
+		}
+		if (V_ROI_ALLVALUES.size()>0){
+			Vmin = *std::min_element(V_ROI_ALLVALUES.begin(), V_ROI_ALLVALUES.end());
+			Vmax = *std::max_element(V_ROI_ALLVALUES.begin(), V_ROI_ALLVALUES.end());
+			cout << "Minimum Value Value: " << Vmin << endl;
+			cout << "Maximum Value Value:  " << Vmax << endl;
+		}
+	}
+
+	if (mouseHasMoved == true){
+		//if the mouse is held down, we will draw the click and dragged rectangle to the screen
+		rectangle(frame, initialClickPoint, cv::Point(endClickPoint.x, endClickPoint.y), cv::Scalar(0, 255, 0), 1, 8, 0);
+	}
+	HSVMINS.push_back(Scalar(Hmin, Smin, Vmin));
+	cout << HSVMINS[HSVMINS.size()-1];
+	HSVMAXS.push_back(Scalar(Hmax, Smax, Vmax));
+
+}
+
+
+
+
+
+
+
+
+//==================== Shape functions ===========================================================================
 
 vector<string> shapeDetection()
 {

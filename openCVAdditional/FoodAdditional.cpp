@@ -52,6 +52,28 @@ Food::Food(string name)
 		this->setColor(Scalar(0,170,130));
 		setType(name);
 	}
+	if (name == "Broccoli")
+	{
+		this->setHSVmin1(Scalar(26,153,40));
+		this->setHSVmax1(Scalar(34,255,117));
+		this->setHSVmin2(Scalar(28,163,29));
+		this->setHSVmin2(Scalar(36,255,119));
+		this->setHSVmin3(Scalar(24,164,31));
+		this->setHSVmin3(Scalar(31,255,131));
+		this->setColor(Scalar(0,170,0));
+		setType(name);
+	}
+	if (name == "Carrot")
+	{
+		this->setHSVmin1(Scalar(8,210,72));
+		this->setHSVmax1(Scalar(12,255,154));
+		this->setHSVmin2(Scalar(0,154,9));
+		this->setHSVmin2(Scalar(15,255,183));
+		this->setHSVmin3(Scalar(9,159,25));
+		this->setHSVmin3(Scalar(15,255,136));
+		this->setColor(Scalar(0,170,200));
+		setType(name);
+	}
 }
 
 Food::~Food(void)
