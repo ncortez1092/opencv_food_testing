@@ -89,6 +89,8 @@ static const char* portName = "/dev/ttyACM0";
 	int serialPort;
 	struct termios portOptions;
 
+// This is for our text file
+fstream foodValues;
 
 bool ifClicked, mouseHasMoved, rectangleIsSelected;
 
@@ -136,6 +138,7 @@ Food Carrot("Carrot");
 Food Broccoli("Broccoli");
 Food PotSticker("PotSticker");
 Food Meat("Meat");
+vector<Food> Foodies;
 
 // Matrix to store each frame of the webcam feed
 Mat liveFeed, temp, gray;
@@ -428,8 +431,8 @@ void trackingObject(Food& theFood, Mat thresholdImg,Mat HSV, Mat &liveFeed){
 					objectFound = true;
 
 				}else objectFound = false;
-				if(objectFound ==true){
-					putText(liveFeed, "Tracking", Point(0, 50), 1, 1, Scalar(0,0,255), 2);
+				if(objectFound == true){
+					putText(liveFeed, "Object Found", Point(0, 50), 1, 1, Scalar(0,0,255), 2);
 					drawObject(Ingredients,liveFeed);
 					theFood.setXPos(moment.m10/area);	
 					theFood.setYPos(moment.m01/area);
@@ -576,13 +579,80 @@ void recordHSV(Mat frame, Mat HSVCalibration)
 		rectangle(frame, initialClickPoint, cv::Point(endClickPoint.x, endClickPoint.y), cv::Scalar(0, 255, 0), 1, 8, 0);
 	}
 	HSVMINS.push_back(Scalar(Hmin, Smin, Vmin));
-	cout << HSVMINS[HSVMINS.size()-1];
 	HSVMAXS.push_back(Scalar(Hmax, Smax, Vmax));
 
 }
 
+void getCurrentFoods(fstream &file, string line)
+{
+	while( getline (file,line) )
+	{
+		float temp1, temp2;
+		sscanf(line.c_str(), "%s [%f, %f, %f, %f] [%f, %f, %f, %f]", Name, &HSVmintemp1, &HSVmintemp2, &HSVmintemp3, &temp1, &HSVmaxtemp1, &HSVmaxtemp2, &HSVmaxtemp3, &temp2);
+		cout << Name << HSVmintemp1 << HSVmintemp2 << HSVmintemp3;
+		Names.push_back(Name);
+		HSVMins.push_back(Scalar(HSVmintemp1, HSVmintemp2, HSVmintemp3));
+		HSVMaxs.push_back(Scalar(HSVmaxtemp1, HSVmaxtemp2, HSVmaxtemp3));
+	}
+	file.close();
+}
 
+bool checkIfFileOpen(fstream &file)
+{	
+	if (!file.is_open()) 
+	{
+		cout << "File not opened " << endl;
+		return false;
+	}
+}
 
+void loadLocalHSV()
+{
+	for (int k = 0; k < LocalNames.size(); k++)
+	{
+		for (int j = 0; j < Names.size(); j++)
+		{
+			if (LocalNames[k] == Names[j])
+			{
+				LocalHSVMins[k] = HSVMins[j];
+				LocalHSVMaxs[k] = HSVMaxs[k];
+			}
+		}
+	}
+
+}
+
+void storeNewFoods(int i)
+{
+	if(LocalHSVMins[i] == Scalar(0,0,0))
+				{	
+					cout << "Make rectangle in center of food " << LocalNames[i] << " until it tracks, then hit the Q key" << endl;
+					unsigned long now = clock();
+					while ((clock()- now)/CLOCKS_PER_SEC <= .01000)
+					{
+						imshow(windowOriginal1,liveFeed);
+						recordHSV(liveFeed, HSV);
+						inRange(HSV, Scalar(Hmin, Smin, Vmin), Scalar(Hmax,Smax,Vmax), thresholdImg);
+						trackingObject(Foodies.at(i),thresholdImg,HSV,liveFeed);
+						int key = waitKey(300);
+						if (key == 27 | key == 'q' | key == 'Q') break;
+					}
+					LocalHSVMins[i] = HSVMINS[HSVMINS.size()-1];
+					LocalHSVMaxs[i] = HSVMAXS[HSVMAXS.size()-1];
+
+					foodValues.open("foodValues.txt", ios::in | ios::app | ios::out);
+					cout << "Adding.. " << endl;
+					foodValues << LocalNames[i];
+					cout << LocalNames[i] << " ";
+					foodValues << " ";
+					foodValues << LocalHSVMins[i];
+					cout << LocalHSVMins[i] << " ";
+					foodValues << " ";
+					foodValues << LocalHSVMins[i] << endl;
+					cout << LocalHSVMaxs[i] << endl;
+					foodValues.close();
+				}
+}
 
 
 

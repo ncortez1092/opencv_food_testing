@@ -47,14 +47,7 @@ int cropHeight = 280, cropWidth = 210, cropX = 185, cropY = 60; // Used for the 
 
 int main(int argc, char* argv[])
 {
-	fstream foodValues;
-	foodValues.open("foodValues.txt", ios::in | ios::app | ios::out);
 	setUpSerial();
-	if (!foodValues.is_open()) 
-	{
-		cout << "File not opened " << endl;
-		 return -1;
-	}
 	cout << "How many ingredients?" << endl;
 	cin >> ingredientNum;
 	for (int i=0; i< ingredientNum; i++)
@@ -62,6 +55,8 @@ int main(int argc, char* argv[])
 		cout << "Name of ingredient number "<< (i+1) << ": " << endl;
 		cin >> Name;
 		LocalNames.push_back(Name);
+		Food Name;
+		Foodies.push_back(Name);
 		LocalHSVMins.push_back(Scalar(0,0,0));
 		LocalHSVMaxs.push_back(Scalar(0,0,0));
 	}
@@ -72,7 +67,7 @@ int main(int argc, char* argv[])
 
 
 	//video capture object to acquire webcam feed
-	VideoCapture capture(0);
+	VideoCapture capture(1);
 	capture.set(CV_CAP_PROP_FRAME_WIDTH,FRAME_WIDTH); // Set width
 	capture.set(CV_CAP_PROP_FRAME_HEIGHT,FRAME_HEIGHT); // Set height
 	namedWindow(windowOriginal1);
@@ -147,89 +142,29 @@ In the future: We can have it continuously recalibrate itself over time/3 interv
 as Raw, medium, and finished. Then we can save it and have 3 sub-classes of each food class.
 	 		*/
 			tcflush(serialPort, TCIOFLUSH);
-			while( getline (foodValues,gline) )
-			{
-
-				sscanf(gline.c_str(), "%s [%f, %f, %f] [%f, %f, %f]", Name, &HSVmintemp1, &HSVmintemp2, &HSVmintemp3, &HSVmaxtemp1, &HSVmaxtemp2, &HSVmaxtemp3);
-				cout << Name << HSVmintemp1 << HSVmintemp2 << HSVmintemp3;
-				Names.push_back(Name);
-				HSVMins.push_back(Scalar(HSVmintemp1, HSVmintemp2, HSVmintemp3));
-				HSVMaxs.push_back(Scalar(HSVmaxtemp1, HSVmaxtemp2, HSVmaxtemp3));
-				foodValues.close();
-				/*for (int i = 0; i < Names.size(); i++)
-				{
-					if (Name == Names[i]) checkIfOnList[i] = true;
-					else checkIfOnList[i] = false;
-					cout << checkIfOnList[i];
-				}
-				for (int i = 0; i < Names.size(); i++)
-					{
-						if (checkIfOnList[i]) 
-						{
-							HSVMins[i] = Scalar(HSVmintemp1, HSVmintemp2, HSVmintemp3);
-							HSVMaxs[i] = Scalar(HSVmaxtemp1, HSVmaxtemp2, HSVmaxtemp3);
-						}
-					}*/
-			}
+			foodValues.open("foodValues.txt", ios::in | ios::app | ios::out);
+			if(checkIfFileOpen(foodValues)) return -1;
 			for (static bool first =true; first; first = false)
 			{
+				getCurrentFoods(foodValues, gline);
 				int i = 0;
 				while (i < ingredientNum)
 				{
-					for (int k = 0; k < LocalNames.size(); k++)
-					{
-						for (int j = 0; j < Names.size(); j++)
-						{
-							if (LocalNames[k] == Names[j])
-							{
-								LocalHSVMins[k] = HSVMins[j];
-								cout << "Debug.." << LocalHSVMins[k] << endl;
-							}
-						}
-					}
-
-				if(LocalHSVMins[i] == Scalar(0,0,0))
-				{	cout << "Make rectangle in center of food " << LocalNames[i] << " until it tracks, then hit the Q key" << endl;
-					unsigned long now = clock();
-					while ((clock()- now)/CLOCKS_PER_SEC <= .01000)
-					{
-								//capture.read(liveFeed);
-								//circle( mask, center, radius, Scalar(255,255,255), -1, 8, 0 ); //-1 means filled
-								//temp.copyTo( liveFeed, mask );
-								//liveFeed = liveFeed(myCropROI);
-								//resize(liveFeed, liveFeed, Size(400,400));
-						imshow(windowOriginal1,liveFeed);
-						recordHSV(liveFeed, HSV);
-						inRange(HSV, Scalar(Hmin, Smin, Vmin), Scalar(Hmax,Smax,Vmax), thresholdImg);
-						//trackingObject(PotSticker,thresholdImg,HSV,liveFeed);
-						int key = waitKey(300);
-						if (key == 27 | key == 'q' | key == 'Q') break;
-					}
-					cout << LocalHSVMins[i];
-					cout << HSVMINS[HSVMINS.size()-1];
-					LocalHSVMins[i] = HSVMINS[HSVMINS.size()-1];
-					LocalHSVMaxs[i] = HSVMAXS[HSVMAXS.size()-1];
-
-					foodValues.open("foodValues.txt", ios::in | ios::app | ios::out);
-					cout << "Adding.. " << endl;
-					foodValues << LocalNames[i];
-					cout << LocalNames[i] << " ";
-					foodValues << " ";
-					foodValues << LocalHSVMins[i];
-					cout << LocalHSVMins[i] << " ";
-					foodValues << " ";
-					foodValues << LocalHSVMins[i] << endl;
-					cout << LocalHSVMaxs[i] << endl;
-					foodValues.close();
-				}
-
-				//imshow(windowOriginal1,liveFeed);
-				//waitKey(50);
+				loadLocalHSV();
+				storeNewFoods(i);
 				i++;
-				//waitKey(5000);
 				}
 			}
-
+			for (int i = 0; i < Foodies.size(); i++)
+				{
+					Foodies.at(i).setHSVmin1(LocalHSVMins[i]);
+					Foodies.at(i).setHSVmax1(LocalHSVMaxs[i]);
+					Foodies.at(i).setType(LocalNames[i]);
+					inRange(HSV,Foodies.at(i).getHSVmin1(),Foodies.at(i).getHSVmax1(), thresholdImg);
+					trackingObject(Foodies.at(i), thresholdImg, HSV, liveFeed);
+					imshow(windowOriginal1,liveFeed);
+					waitKey(50);
+				}
 			//inRange(HSV,Bread.getHSVmin1(), Bread.getHSVmax1(),thresholdImg1);
 			//inRange(HSV,Bread.getHSVmin3(), Bread.getHSVmax3(),thresholdImg2);
 			//inRange(HSV,PotSticker.getHSVmin1(), PotSticker.getHSVmax1(),thresholdImg3);
