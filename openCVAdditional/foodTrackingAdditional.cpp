@@ -33,10 +33,7 @@ using namespace cv;
 
 
 //==================================== Initializations ===================================================
-
-// If we would like to calibrate our filter values, set to true.
-bool doCalibrate = false; // 280, 210, 180, 80 works
-int cropHeight = 280, cropWidth = 210, cropX = 185, cropY = 60; // Used for the ROI crop
+int circleCount=0,triCount=0,rectCount=0,pentaCount=0;
 
 //====================== End Initializations =====================================================
 
@@ -48,225 +45,64 @@ int cropHeight = 280, cropWidth = 210, cropX = 185, cropY = 60; // Used for the 
 int main(int argc, char* argv[])
 {
 	setUpSerial();
-	cout << "How many ingredients?" << endl;
-	cin >> ingredientNum;
-	for (int i=0; i< ingredientNum; i++)
-	{
-		cout << "Name of ingredient number "<< (i+1) << ": " << endl;
-		cin >> Name;
-		LocalNames.push_back(Name);
-		Food Name;
-		Foodies.push_back(Name);
-		LocalHSVMins.push_back(Scalar(0,0,0));
-		LocalHSVMaxs.push_back(Scalar(0,0,0));
-		//Mat temp;
-		//ThresholdImgs1.push_back(temp);
-	}
-	if(doCalibrate){
-		//create slider bars for HSV filtering
-		createTrackbars();
-	}
-
-
-	//video capture object to acquire webcam feed
-	VideoCapture capture(1);
-	capture.set(CV_CAP_PROP_FRAME_WIDTH,FRAME_WIDTH); // Set width
-	capture.set(CV_CAP_PROP_FRAME_HEIGHT,FRAME_HEIGHT); // Set height
-	namedWindow(windowOriginal1);
-	setMouseCallback(windowOriginal1, makeCalibrationRectangle, &liveFeed);
-	ifClicked = false; 
-	mouseHasMoved = false; 
-	rectangleIsSelected = false;
+	getInfoFromUser();
+	calibrateVideo();
 
 	while(1)
 	{
 // ------------- We capture the video, crop it, and only focus on the pot -----------------------
-		capture.read(temp);
-		cv::Mat mask = cv::Mat::zeros( temp.rows, temp.cols, CV_8UC1 );
-		Point center = Point(330, 177);
-		float radius = 80;
-		cropX = 330 - radius;
-		cropY = 177 - radius;
-		cropHeight = 2*radius;
-		cropWidth = 2*radius;
-		Rect myCropROI(cropX, cropY , cropHeight , cropWidth);
-		//VideoWriter video("out.avi",CV_FOURCC('X','V','I','D'),30,Size(cropWidth,cropHeight),true);
-		//video.open("out.avi",CV_FOURCC('X','V','I','D'),30,Size(cropWidth,cropHeight),true);
-		circle( mask, center, radius, Scalar(255,255,255), -1, 8, 0 ); //-1 means filled
-		temp.copyTo( liveFeed, mask );
-		liveFeed = liveFeed(myCropROI);
-		resize(liveFeed, liveFeed, Size(400,400));
-		cvtColor(liveFeed,HSV,COLOR_BGR2HSV);
-		float ratio = FRAME_HEIGHT/cropHeight;
-//--------------------------------------------------------------------------------------------------
-		if(doCalibrate==true){
-		// if doCalibrate == true, we go into calibration mode with sliders to find values
-
-//------------------- This is used for finding the center point and the radius ----------------
-		vector<Vec3f> circles;
-		HoughCircles(gray, circles, CV_HOUGH_GRADIENT, 1, gray.rows/8, 200, 100, 0, 0 );
-		GaussianBlur(gray,gray,Size(8,8),2,2);
-//----- we can access these numbers using center = circles[0][0], radius = circles[0][1]----------
-		
-		inRange(HSV,Scalar(Hmin,Smin,Vmin),Scalar(Hmax,Smax,Vmax),thresholdImg);
-		morphOps(thresholdImg);
-		imshow(windowHSV,thresholdImg);
-		trackingObjectCalibration(thresholdImg,HSV,liveFeed);
-
-	 	}else{
+		makeCropAndCircle();
 //-------- Here we do shape recognition before moving on -------------------------------
-	 	/*vector<string> shapes = shapeDetection();
-	 	int rectCount=0,circleCount=0,pentaCount=0,triCount=0;
-	 	for (int k = 0; k < shapes.size(); k++)
-		{
-			if(shapes[k] == "Rectangle") rectCount += 1;
-			if(shapes[k] == "Circle") circleCount += 1;
-			if(shapes[k] == "Triangle") triCount += 1;
-			if(shapes[k] == "Pentagon") pentaCount += 1;
-	 	}*/
+	 	//vector<string> shapes = shapeDetection();
+	 	//shapeCount(shapes,circleCount,triCount,rectCount,pentaCount);
 //-------------------------------------------------------------------------------------------------
 	 	//if(rectCount > circleCount || rectCount > triCount || rectCount > pentaCount)
 	 	//{ // If we have more rectangles than anything else, lets find out what they are
-
-
-	 		/*
-I want to implement here with the record is something where the system asks:
-"How many ingredients?" makes a vector for each of them. Then it will ask the user to drag
-a small rectangle in the center and when its stable, hit the middle mouse button. That will
-save the first HSV range. Then the system will ask the user to draw another rectangle in
-another area of the food 2 more times. Ill make a mask for all of these bitwise_or manner.
-It will save the values under the food group entered.
-
-We can have it save the values entered into a file, and have that same file being read everytime
-and it will contain all the info on all of our foods we have used before.
-
-In the future: We can have it continuously recalibrate itself over time/3 intervals. Enter it
-as Raw, medium, and finished. Then we can save it and have 3 sub-classes of each food class.
-	 		*/
-			tcflush(serialPort, TCIOFLUSH);
-			foodValues.open("foodValues.txt", ios::in | ios::app | ios::out);
-			if(checkIfFileOpen(foodValues)) return -1;
-			for (static bool first =true; first; first = false)
+		tcflush(serialPort, TCIOFLUSH);
+		for (static bool first = true; first; first = false)
+		{
+			getCurrentFoods(foodValues, gline);
+			int i = 0;
+			while (i < Foodies.size())
 			{
-				getCurrentFoods(foodValues, gline);
-				int i = 0;
-				while (i < ingredientNum)
-				{
 				loadLocalHSV();
-				storeNewFoods(i);
+				storeNewFoods(foodValues, i);
+				setClassValues(Foodies, i);
+				//createMasks(Foodies, i);
 				i++;
-				}
-				for (int i = 0; i < Foodies.size(); i++)
-				{
-					Foodies.at(i).setHSVmin1(LocalHSVMins[i]);
-					Foodies.at(i).setHSVmax1(LocalHSVMaxs[i]);
-					Foodies.at(i).setType(LocalNames[i]);
-					inRange(HSV,Foodies.at(i).getHSVmin1(),Foodies.at(i).getHSVmax1(), thresholdImg);
-					morphOps(thresholdImg);
-					ThresholdImgs1.push_back(thresholdImg);
-				}
 			}
-			trackingObject(Foodies, ThresholdImgs1, HSV, liveFeed);
-			imshow(windowOriginal1,liveFeed);
-			imshow(windowOriginal2,thresholdImg);
-			waitKey(50);
-			//inRange(HSV,Bread.getHSVmin1(), Bread.getHSVmax1(),thresholdImg1);
-			//inRange(HSV,Bread.getHSVmin3(), Bread.getHSVmax3(),thresholdImg2);
-			//inRange(HSV,PotSticker.getHSVmin1(), PotSticker.getHSVmax1(),thresholdImg3);
-			//inRange(HSV,PotSticker.getHSVmin2(), PotSticker.getHSVmax2(),thresholdImg4);
-			//inRange(HSV,Meat.getHSVmin1(), Meat.getHSVmax1(),thresholdImg5);
-			//inRange(HSV,Meat.getHSVmin3(), Meat.getHSVmax3(),thresholdImg6);
-			//inRange(HSV,Broccoli.getHSVmin1(), Broccoli.getHSVmax1(),thresholdImg7);
-			//inRange(HSV,Broccoli.getHSVmin2(), Broccoli.getHSVmax2(),thresholdImg8);
-			//inRange(HSV,Carrot.getHSVmin1(), Carrot.getHSVmax1(),thresholdImg1);
-			//inRange(HSV,Carrot.getHSVmin3(), Carrot.getHSVmax3(),thresholdImg2);
-			//bitwise_or(thresholdImg1,thresholdImg2,thresholdImg);
-			//bitwise_or(thresholdImg3,thresholdImg4,thresholdImg9);
-			//bitwise_or(thresholdImg5,thresholdImg6,thresholdImg10);
-			//bitwise_or(thresholdImg7,thresholdImg8,thresholdImg11);
-			//morphOps(thresholdImg);
-			//morphOps(thresholdImg9); 	
-			//morphOps(thresholdImg10);
-			//morphOps(thresholdImg11);
-			//imshow(windowThresh,thresholdImg5);
-			//trackingObject(Bread,thresholdImg,HSV,liveFeed);
-			//trackingObject(Meat,thresholdImg10,HSV2,liveFeed);
-			//trackingObject(TriangleMeat,thresholdImg11,HSV,liveFeed);
-			//trackingObject(Broccoli,thresholdImg11,HSV,liveFeed);
-			//trackingObject(Carrot,thresholdImg,HSV,liveFeed);
-			//PotSticker.setBoarder();
-			//Bread.setBoarder();
-			//Meat.setBoarder();
-			//TriangleMeat.setBoarder();
-			//char const* BreadChar = relayCoords(Bread, liveFeed);
-			/*char const* BroccoliChar = relayCoords(Broccoli, liveFeed);
-			if(counttest % 150 == 0 && sizeof(BroccoliChar) > 4)
-			{
-				write(serialPort, BroccoliChar, 62);
-				cout << BroccoliChar << endl;
-			}
-			char const* CarrotChar = relayCoords(Carrot,liveFeed);
-			if(counttest % 160 == 0 && sizeof(CarrotChar) > 4)
-			{
-				write(serialPort, CarrotChar, 62);
-				cout << CarrotChar << endl;
-			}*/
-			
-			char const* PotStickerChar = relayCoords(PotSticker, liveFeed);
-						if(counttest % 150 == 0 && sizeof(PotStickerChar) > 4)
-			{
-				write(serialPort, PotStickerChar, 62);
-				cout << PotStickerChar << endl;
-			}/*
-			char const* MeatChar = relayCoords(Meat, liveFeed);
-			if(counttest % 200 == 0 && sizeof(MeatChar) > 4)
-			{
-				write(serialPort, MeatChar, 62);
-				cout << MeatChar << endl;
-			}*/
-			//char const* TriangleMeatChar = relayCoords(TriangleMeat, liveFeed);
-			/*if (counttest % 60 == 0 && sizeof(BreadChar) > 4)
-			{
-			write(serialPort, BreadChar, 62);
-			cout << BreadChar << endl;
-			}*/
-		//}
-		//if(circleCount > rectCount || circleCount > triCount || circleCount > pentaCount)
-		//{
-
-		//}
-		//else if(triCount > circleCount || triCount > rectCount || triCount > pentaCount)
-		//{
-
-		//}
-		//else
-		//{
-
-		//}
-			/*tcflush(serialPort, TCIOFLUSH);
-			cvtColor(liveFeed,HSV,COLOR_BGR2HSV);
-			inRange(HSV,Carrot.getHSVmin(), Carrot.getHSVmax(),thresholdImg);
-			morphOps(thresholdImg);
-			imshow(windowThresh,thresholdImg);
-			trackingObjectCarrot(Carrot,thresholdImg,HSV,liveFeed);
-			char const* CarrotChar = relayCoords(Carrot, liveFeed);
-			if (counttest % 60 == 0 && sizeof(CarrotChar) > 6)
-			{
-				write(serialPort, CarrotChar, 62);
-				cout << CarrotChar << endl;
-			}	*/
-			counttest += 1;
-			//video.write(liveFeed);
-			imshow(windowOriginal1,liveFeed);
-		//	imshow(windowOriginal2,liveFeed);
-
-        
-			int key = waitKey(30);
-			if (key == 27) break; // Wait .5 seconds before relaying the coords again. Will not work without this,
-						  // Make 0 to run forever and not wait
-
 		}
-	}
 
-		return 0;
+		if (counttest % 70 == 0)
+		{
+			ThresholdImgs1.clear();
+			for (int i = 0; i < Foodies.size(); i++)
+			{
+				recreateMasks(Foodies, i);
+				cout << "In counttest loop: ";
+				cout << Foodies.at(i).getHSVmin1() << ", " << Foodies.at(i).getHSVmax1() << endl;
+				cout << "Iterration: " << i << endl;
+				waitKey(1000);
+
+			}
+		}
+
+		trackingObjects(Foodies, ThresholdImgs1, HSV, liveFeed);
+		//inRange(HSV,PotSticker.getHSVmin1(), PotSticker.getHSVmax1(),thresholdImg3);
+		//inRange(HSV,PotSticker.getHSVmin2(), PotSticker.getHSVmax2(),thresholdImg4);
+		//bitwise_or(thresholdImg3,thresholdImg4,thresholdImg9);
+		//morphOps(thresholdImg9); 	
+		//trackingObject(PotSticker, thresholdImg9, HSV, liveFeed);
+		//PotSticker.setBoarder();
+		//char const* PotStickerChar = relayCoords(PotSticker, liveFeed);
+		//if(counttest % 150 == 0 && sizeof(PotStickerChar) > 4)
+		//{
+		//	write(serialPort, PotStickerChar, 62);
+		//	cout << PotStickerChar << endl;
+		//}
+		counttest += 1;
+		imshow(windowOriginal1,liveFeed);
+		waitKey(50);
+	}
+	return 0;
 } 	

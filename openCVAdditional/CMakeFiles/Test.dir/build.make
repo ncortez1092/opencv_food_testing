@@ -49,37 +49,37 @@ include CMakeFiles/Test.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/Test.dir/flags.make
 
-CMakeFiles/Test.dir/foodTrackingAdditional.cpp.o: CMakeFiles/Test.dir/flags.make
-CMakeFiles/Test.dir/foodTrackingAdditional.cpp.o: foodTrackingAdditional.cpp
+CMakeFiles/Test.dir/functionTesting.cpp.o: CMakeFiles/Test.dir/flags.make
+CMakeFiles/Test.dir/functionTesting.cpp.o: functionTesting.cpp
 	$(CMAKE_COMMAND) -E cmake_progress_report /home/ncortez/Desktop/opencv_food_testing/openCVAdditional/CMakeFiles $(CMAKE_PROGRESS_1)
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object CMakeFiles/Test.dir/foodTrackingAdditional.cpp.o"
-	/usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/Test.dir/foodTrackingAdditional.cpp.o -c /home/ncortez/Desktop/opencv_food_testing/openCVAdditional/foodTrackingAdditional.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object CMakeFiles/Test.dir/functionTesting.cpp.o"
+	/usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/Test.dir/functionTesting.cpp.o -c /home/ncortez/Desktop/opencv_food_testing/openCVAdditional/functionTesting.cpp
 
-CMakeFiles/Test.dir/foodTrackingAdditional.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/Test.dir/foodTrackingAdditional.cpp.i"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /home/ncortez/Desktop/opencv_food_testing/openCVAdditional/foodTrackingAdditional.cpp > CMakeFiles/Test.dir/foodTrackingAdditional.cpp.i
+CMakeFiles/Test.dir/functionTesting.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/Test.dir/functionTesting.cpp.i"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /home/ncortez/Desktop/opencv_food_testing/openCVAdditional/functionTesting.cpp > CMakeFiles/Test.dir/functionTesting.cpp.i
 
-CMakeFiles/Test.dir/foodTrackingAdditional.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/Test.dir/foodTrackingAdditional.cpp.s"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /home/ncortez/Desktop/opencv_food_testing/openCVAdditional/foodTrackingAdditional.cpp -o CMakeFiles/Test.dir/foodTrackingAdditional.cpp.s
+CMakeFiles/Test.dir/functionTesting.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/Test.dir/functionTesting.cpp.s"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /home/ncortez/Desktop/opencv_food_testing/openCVAdditional/functionTesting.cpp -o CMakeFiles/Test.dir/functionTesting.cpp.s
 
-CMakeFiles/Test.dir/foodTrackingAdditional.cpp.o.requires:
-.PHONY : CMakeFiles/Test.dir/foodTrackingAdditional.cpp.o.requires
+CMakeFiles/Test.dir/functionTesting.cpp.o.requires:
+.PHONY : CMakeFiles/Test.dir/functionTesting.cpp.o.requires
 
-CMakeFiles/Test.dir/foodTrackingAdditional.cpp.o.provides: CMakeFiles/Test.dir/foodTrackingAdditional.cpp.o.requires
-	$(MAKE) -f CMakeFiles/Test.dir/build.make CMakeFiles/Test.dir/foodTrackingAdditional.cpp.o.provides.build
-.PHONY : CMakeFiles/Test.dir/foodTrackingAdditional.cpp.o.provides
+CMakeFiles/Test.dir/functionTesting.cpp.o.provides: CMakeFiles/Test.dir/functionTesting.cpp.o.requires
+	$(MAKE) -f CMakeFiles/Test.dir/build.make CMakeFiles/Test.dir/functionTesting.cpp.o.provides.build
+.PHONY : CMakeFiles/Test.dir/functionTesting.cpp.o.provides
 
-CMakeFiles/Test.dir/foodTrackingAdditional.cpp.o.provides.build: CMakeFiles/Test.dir/foodTrackingAdditional.cpp.o
+CMakeFiles/Test.dir/functionTesting.cpp.o.provides.build: CMakeFiles/Test.dir/functionTesting.cpp.o
 
 # Object files for target Test
 Test_OBJECTS = \
-"CMakeFiles/Test.dir/foodTrackingAdditional.cpp.o"
+"CMakeFiles/Test.dir/functionTesting.cpp.o"
 
 # External object files for target Test
 Test_EXTERNAL_OBJECTS =
 
-Test: CMakeFiles/Test.dir/foodTrackingAdditional.cpp.o
+Test: CMakeFiles/Test.dir/functionTesting.cpp.o
 Test: CMakeFiles/Test.dir/build.make
 Test: /usr/local/lib/libopencv_videostab.so.3.1.0
 Test: /usr/local/lib/libopencv_videoio.so.3.1.0
@@ -114,7 +114,7 @@ Test: CMakeFiles/Test.dir/link.txt
 CMakeFiles/Test.dir/build: Test
 .PHONY : CMakeFiles/Test.dir/build
 
-CMakeFiles/Test.dir/requires: CMakeFiles/Test.dir/foodTrackingAdditional.cpp.o.requires
+CMakeFiles/Test.dir/requires: CMakeFiles/Test.dir/functionTesting.cpp.o.requires
 .PHONY : CMakeFiles/Test.dir/requires
 
 CMakeFiles/Test.dir/clean:

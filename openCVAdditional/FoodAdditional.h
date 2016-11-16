@@ -92,6 +92,8 @@ static const char* portName = "/dev/ttyACM0";
 // This is for our text file
 fstream foodValues;
 
+VideoCapture capture(1);
+
 bool ifClicked, mouseHasMoved, rectangleIsSelected;
 
 //These are used for HSV detection, and will be used on our trackbars
@@ -154,16 +156,38 @@ Rect rectangleROI;
 char const* relayCoords(Food);
 void on_trackbar(int, void*){}
 string intToString(int);
-void createTrackbars();
 void drawObject(vector<Food>, Mat &);
 void morphOps(Mat&);
-void trackingObjectCalibration(Mat, Mat, Mat &);
 void trackingObject(Food& , Mat, Mat, Mat &);
+void trackingObjects(vector<Food>&, Mat, Mat, Mat&);
 void setUpSerial();
 string floatToString(float);
-
+bool checkIfFileOpen(fstream&);
 //====================== End Initializations =====================================================
 
+
+
+void makeCropAndCircle(int cropHeight = 280, int cropWidth = 210, int cropX = 185, int cropY = 60)
+{
+
+		capture.read(temp);
+		cv::Mat mask = cv::Mat::zeros( temp.rows, temp.cols, CV_8UC1 );
+		Point center = Point(330, 177);
+		float radius = 80;
+		cropX = 330 - radius;
+		cropY = 177 - radius;
+		cropHeight = 2*radius;
+		cropWidth = 2*radius;
+		Rect myCropROI(cropX, cropY , cropHeight , cropWidth);
+		//VideoWriter video("out.avi",CV_FOURCC('X','V','I','D'),30,Size(cropWidth,cropHeight),true);
+		//video.open("out.avi",CV_FOURCC('X','V','I','D'),30,Size(cropWidth,cropHeight),true);
+		circle( mask, center, radius, Scalar(255,255,255), -1, 8, 0 ); //-1 means filled
+		temp.copyTo( liveFeed, mask );
+		liveFeed = liveFeed(myCropROI);
+		resize(liveFeed, liveFeed, Size(400,400));
+		cvtColor(liveFeed,HSV,COLOR_BGR2HSV);
+		float ratio = FRAME_HEIGHT/cropHeight;
+}
 
 
 char const* relayCoords(Food theFood, Mat& frame){
@@ -291,25 +315,7 @@ string intToString(int number){
 	s << number;
 	return s.str();
 }
-void createTrackbars(){
 
-
-	namedWindow(windowControls,0);
-
-	char TrackbarName[50];
-	sprintf(TrackbarName, "Hmin", Hmin);
-	sprintf(TrackbarName, "Hmax", Hmax);
-	sprintf(TrackbarName, "Smin", Smin); 
-	sprintf(TrackbarName, "Smax", Smax); 
-	sprintf(TrackbarName, "Vmin", Vmin);
-	sprintf(TrackbarName, "Vmax", Vmax);    
-	createTrackbar("Hmin", windowControls, &Hmin, 255, on_trackbar);
-	createTrackbar("Hmax", windowControls, &Hmax, 255, on_trackbar);
-	createTrackbar("Smin", windowControls, &Smin, 255, on_trackbar);
-	createTrackbar("Smax", windowControls, &Smax, 255, on_trackbar);
-	createTrackbar("Vmin", windowControls, &Vmin, 255, on_trackbar);
-	createTrackbar("Vmax", windowControls, &Vmax, 255, on_trackbar);
-}
 void drawObject(vector<Food> theFood, Mat &frame){
 
 
@@ -341,6 +347,64 @@ void morphOps(Mat& thresholdImg){
 }
 
 
+
+void trackingObject(Food& theFood,Mat thresholdImg,Mat HSV, Mat &liveFeed){
+	vector<Food> Ingredients;
+		Mat tempImg;
+		thresholdImg.copyTo(tempImg);
+		//these two vectors needed for output of findContours
+		vector< vector<Point> > contours;
+		vector<Vec4i> hierarchy;
+		//find contours of filtered image using openCV findContours function
+		findContours(tempImg,contours,hierarchy,CV_RETR_CCOMP,CV_CHAIN_APPROX_SIMPLE );
+		//use moments method to find our filtered object
+		double refArea = 0;
+		bool objectFound = false;
+		if (hierarchy.size() > 0) 
+		{
+			int num_of_Objects = hierarchy.size();
+			//if number of objects greater than MAX_NUM_OBJECTS we have a noisy filter
+			if(num_of_Objects<MAX_NUM_OBJECTS)
+			{
+				for (int index = 0; index >= 0; index = hierarchy[index][0]) 
+				{
+
+					Moments moment = moments((cv::Mat)contours[index]);
+					float area = moment.m00;
+
+					//if the area is less than 20 px by 20px then it is probably just noise
+					//if the area is the same as the 3/2 of the image size, probably just a bad filter
+					//we only want the object with the largest area so we safe a reference area each
+					//iteration and compare it to the area in the next iteration.
+					if(area>MIN_OBJECT_AREA)
+					{
+
+						theFood.setArea(area);
+						theFood.setXPos(moment.m10/area);	
+						theFood.setYPos(moment.m01/area);
+						theFood.setType(theFood.getType());
+						theFood.setColor(theFood.getColor());
+					
+						Ingredients.push_back(theFood);
+
+						objectFound = true;
+
+					}
+					else objectFound = false;
+					if(objectFound == true)
+					{
+						putText(liveFeed, "Object Found", Point(0, 50), 1, 1, Scalar(0,0,255), 2);
+						drawObject(Ingredients,liveFeed);
+						theFood.setXPos(moment.m10/area);	
+						theFood.setYPos(moment.m01/area);
+						theFood.setType(theFood.getType());
+						theFood.setColor(theFood.getColor());
+					}
+					else putText(liveFeed,"TOO MUCH NOISE! ADJUST FILTER",Point(0,50),1,2,Scalar(0,0,255),2);
+		}
+	}
+}
+}
 void trackingObjectCalibration(Mat thresholdImg,Mat HSV, Mat &liveFeed){
 
 	vector<Food> Ingredients;
@@ -370,12 +434,13 @@ void trackingObjectCalibration(Mat thresholdImg,Mat HSV, Mat &liveFeed){
 				//iteration and compare it to the area in the next iteration.
 				if(area>MIN_OBJECT_AREA){
 
-					Food Bread;
+					Food New_Food;
 
-					Bread.setXPos(moment.m10/area);	
-					Bread.setYPos(moment.m01/area);
+					New_Food.setXPos(moment.m10/area);	
+					New_Food.setYPos(moment.m01/area);
+					New_Food.setType("New");
 				
-					Ingredients.push_back(Bread);
+					Ingredients.push_back(New_Food);
 
 					objectFound = true;
 
@@ -391,13 +456,13 @@ void trackingObjectCalibration(Mat thresholdImg,Mat HSV, Mat &liveFeed){
 		}else putText(liveFeed,"TOO MUCH NOISE! ADJUST FILTER",Point(0,50),1,2,Scalar(0,0,255),2);
 	}
 }
-
-void trackingObject(vector<Food> theFood, vector<Mat> thresholdImg,Mat HSV, Mat &liveFeed){
+void trackingObjects(vector<Food>& theFood, vector<Mat>& thresholdImg,Mat HSV, Mat &liveFeed){
 	//vector<Food> Ingredients;
 for (int i = 0; i < theFood.size(); i++)
 	{
 		Mat tempImg;
 		thresholdImg.at(i).copyTo(tempImg);
+		imshow("In TrackingObjects", tempImg);
 		//these two vectors needed for output of findContours
 		vector< vector<Point> > contours;
 		vector<Vec4i> hierarchy;
@@ -587,6 +652,8 @@ void recordHSV(Mat frame, Mat HSVCalibration)
 
 void getCurrentFoods(fstream &file, string line)
 {
+	file.open("foodValues.txt", ios::in | ios::app | ios::out);
+	if(checkIfFileOpen(file)) return;
 	while( getline (file,line) )
 	{
 		float temp1, temp2;
@@ -617,32 +684,36 @@ void loadLocalHSV()
 			if (LocalNames[k] == Names[j])
 			{
 				LocalHSVMins[k] = HSVMins[j];
-				LocalHSVMaxs[k] = HSVMaxs[k];
+				LocalHSVMaxs[k] = HSVMaxs[j];
 			}
 		}
 	}
 
 }
 
-void storeNewFoods(int i)
+void storeNewFoods(fstream& file, int i)
 {
 	if(LocalHSVMins[i] == Scalar(0,0,0))
 				{	
 					cout << "Make rectangle in center of food " << LocalNames[i] << " until it tracks, then hit the Q key" << endl;
 					unsigned long now = clock();
-					while ((clock()- now)/CLOCKS_PER_SEC <= .01000)
+					while ((clock()- now)/CLOCKS_PER_SEC <= 1)
 					{
+						makeCropAndCircle();
 						imshow(windowOriginal1,liveFeed);
 						recordHSV(liveFeed, HSV);
 						inRange(HSV, Scalar(Hmin, Smin, Vmin), Scalar(Hmax,Smax,Vmax), thresholdImg);
-						//trackingObject(Foodies.at(i),thresholdImg,HSV,liveFeed);
-						int key = waitKey(300);
-						if (key == 27 | key == 'q' | key == 'Q') break;
+						morphOps(thresholdImg);
+						imshow("Calibration", thresholdImg);
+						//trackingObjectCalibration(thresholdImg, HSV, liveFeed);
+						int c = waitKey(100);
+						if (c == 27 | c == 'q' | c == 'Q') break;
 					}
 					LocalHSVMins[i] = HSVMINS[HSVMINS.size()-1];
 					LocalHSVMaxs[i] = HSVMAXS[HSVMAXS.size()-1];
 
-					foodValues.open("foodValues.txt", ios::in | ios::app | ios::out);
+					file.open("foodValues.txt", ios::in | ios::app | ios::out);
+					if(checkIfFileOpen(file))return;
 					cout << "Adding.. " << endl;
 					foodValues << LocalNames[i];
 					cout << LocalNames[i] << " ";
@@ -650,15 +721,85 @@ void storeNewFoods(int i)
 					foodValues << LocalHSVMins[i];
 					cout << LocalHSVMins[i] << " ";
 					foodValues << " ";
-					foodValues << LocalHSVMins[i] << endl;
+					foodValues << LocalHSVMaxs[i] << endl;
 					cout << LocalHSVMaxs[i] << endl;
-					foodValues.close();
+					file.close();
 				}
+}
+
+void setClassValues(vector<Food>& theFood, int index)
+{
+	theFood.at(index).setHSVmin1(LocalHSVMins[index]);
+	theFood.at(index).setHSVmax1(LocalHSVMaxs[index]);
+	// Add 2 more HSV assignments
+	theFood.at(index).setType(LocalNames[index]);
+	//cout << "In setClassValues: ";
+	//cout << theFood.at(index).getHSVmin1() << ", " << theFood.at(index).getHSVmax1() << ", " << theFood.at(index).getType()<< endl;
+}
+
+void createMasks(vector<Food>& theFood, int index)
+{
+	Mat threshTemp;
+
+	inRange(HSV,theFood.at(index).getHSVmin1(),theFood.at(index).getHSVmax1(), threshTemp);
+	morphOps(threshTemp);
+	ThresholdImgs1.push_back(threshTemp);
+}
+void releaseMasks(vector<Mat>& theMask)
+{
+	for (int i = 0; i < theMask.size(); i++)
+	{
+		theMask.at(i) = Mat();
+	}
+}
+void recreateMasks(vector<Food>& theFood, int index)
+{	
+	Mat threshTemp;
+	inRange(HSV,theFood.at(index).getHSVmin1(),theFood.at(index).getHSVmax1(), threshTemp);
+	morphOps(threshTemp);
+	ThresholdImgs1.push_back(threshTemp);
+}
+
+void getInfoFromUser()
+{
+	cout << "How many ingredients?" << endl;
+	cin >> ingredientNum;
+	for (int i=0; i < ingredientNum; i++)
+	{
+		cout << "Name of ingredient number "<< (i+1) << ": " << endl;
+		cin >> Name;
+		LocalNames.push_back(Name);
+		Food Name;
+		Foodies.push_back(Name);
+		LocalHSVMins.push_back(Scalar(0,0,0));
+		LocalHSVMaxs.push_back(Scalar(0,0,0));
+	}
+}
+
+void calibrateVideo()
+{
+	capture.set(CV_CAP_PROP_FRAME_WIDTH,FRAME_WIDTH); // Set width
+	capture.set(CV_CAP_PROP_FRAME_HEIGHT,FRAME_HEIGHT); // Set height
+	namedWindow(windowOriginal1);
+	//namedWindow(windowOriginal2);
+	setMouseCallback(windowOriginal1, makeCalibrationRectangle, &liveFeed);
+	ifClicked = false; 
+	mouseHasMoved = false; 
+	rectangleIsSelected = false;
 }
 
 
 
-
+void shapeCount(vector<string> shapes, int& circleCount, int& triCount, int& rectCount, int& pentaCount)
+{
+		 for (int k = 0; k < shapes.size(); k++)
+		{
+			if(shapes[k] == "Rectangle") rectCount += 1;
+			if(shapes[k] == "Circle") circleCount += 1;
+			if(shapes[k] == "Triangle") triCount += 1;
+			if(shapes[k] == "Pentagon") pentaCount += 1;
+	 	}
+}
 
 //==================== Shape functions ===========================================================================
 
