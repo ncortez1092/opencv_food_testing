@@ -103,11 +103,14 @@ int Smin = 0;
 int Smax = 256;
 int Vmin = 0;
 int Vmax = 256;
+int Bavg = 125;
+int Gavg = 125;
+int Ravg = 125;
 int counttest = 0;
 int ingredientNum;
-float HSVmintemp1, HSVmintemp2, HSVmintemp3, HSVmaxtemp1, HSVmaxtemp2, HSVmaxtemp3;
-vector<int> H_ROI_ALLVALUES, S_ROI_ALLVALUES, V_ROI_ALLVALUES;
-vector<Scalar> HSVMins, HSVMaxs, LocalHSVMins, LocalHSVMaxs;
+float HSVmintemp1, HSVmintemp2, HSVmintemp3, HSVmaxtemp1, HSVmaxtemp2, HSVmaxtemp3, Btemp, Gtemp, Rtemp;
+vector<int> H_ROI_ALLVALUES, S_ROI_ALLVALUES, V_ROI_ALLVALUES, B_ROI_ALLVALUES, R_ROI_ALLVALUES, G_ROI_ALLVALUES;
+vector<Scalar> HSVMins, HSVMaxs, BGRVals, LocalHSVMins, LocalHSVMaxs, LocalBGRVals;
 
 
 // Size of the webcam feed
@@ -148,7 +151,7 @@ Mat thresholdImg, thresholdImg1, thresholdImg2, thresholdImg3, thresholdImg4, th
 Mat thresholdImg9, thresholdImg10, thresholdImg11;
 Mat HSV;
 vector<Mat> ThresholdImgs1, ThresholdImgs2, ThresholdImgs3, ThresholdImgs4;
-vector<Scalar> HSVMINS, HSVMAXS;
+vector<Scalar> HSVMINS, HSVMAXS, BGRVALS;
 Point initialClickPoint, endClickPoint;
 Rect rectangleROI;
 // Function Prototypes
@@ -188,6 +191,68 @@ void makeCropAndCircle(int cropHeight = 280, int cropWidth = 210, int cropX = 18
 		cvtColor(liveFeed,HSV,COLOR_BGR2HSV);
 		float ratio = FRAME_HEIGHT/cropHeight;
 }
+
+
+void makeCalibrationRectangle(int event, int x, int y, int flags, void* userdata)
+{
+	Mat* liveFeed = (Mat*)userdata;
+
+		if (event == CV_EVENT_LBUTTONDOWN && ifClicked == false)
+		{
+			//keep track of initial point clicked
+			initialClickPoint = cv::Point(x, y);
+			//user has begun dragging the mouse
+			ifClicked = true;
+		}
+		/* user is dragging the mouse */
+		if (event == CV_EVENT_MOUSEMOVE && ifClicked == true)
+		{
+			//keep track of current mouse point
+			endClickPoint = cv::Point(x, y);
+			//user has moved the mouse while clicking and dragging
+			mouseHasMoved = true;
+		}
+		/* user has released left button */
+		if (event == CV_EVENT_LBUTTONUP && ifClicked == true)
+		{
+			//set rectangle ROI to the rectangle that the user has selected
+			rectangleROI = Rect(initialClickPoint, endClickPoint);
+
+			//reset boolean variables
+			ifClicked = false;
+			mouseHasMoved = false;
+			rectangleIsSelected = true;
+		}
+
+		if (event == CV_EVENT_RBUTTONDOWN)
+		{
+			Hmin = 0;
+			Smin = 0;
+			Vmin = 0;
+			Hmax = 255;
+			Smax = 255;
+			Vmax = 255;
+
+		}
+		if (event == CV_EVENT_MBUTTONDOWN)
+		{
+			//Add code to save the rectangle into a pushbacked vector
+		}
+
+}
+
+void calibrateVideo()
+{
+	capture.set(CV_CAP_PROP_FRAME_WIDTH,FRAME_WIDTH); // Set width
+	capture.set(CV_CAP_PROP_FRAME_HEIGHT,FRAME_HEIGHT); // Set height
+	namedWindow(windowOriginal1);
+	//namedWindow(windowOriginal2);
+	setMouseCallback(windowOriginal1, makeCalibrationRectangle, &liveFeed);
+	ifClicked = false; 
+	mouseHasMoved = false; 
+	rectangleIsSelected = false;
+}
+
 
 
 char const* relayCoords(Food theFood, Mat& frame){
@@ -462,7 +527,7 @@ for (int i = 0; i < theFood.size(); i++)
 	{
 		Mat tempImg;
 		thresholdImg.at(i).copyTo(tempImg);
-		imshow("In TrackingObjects", tempImg);
+		//imshow("In TrackingObjects", tempImg);
 		//these two vectors needed for output of findContours
 		vector< vector<Point> > contours;
 		vector<Vec4i> hierarchy;
@@ -511,7 +576,7 @@ for (int i = 0; i < theFood.size(); i++)
 						//theFood.setType(theFood.getType());
 						//theFood.setColor(theFood.getColor());}
 					}
-					else putText(liveFeed,"TOO MUCH NOISE! ADJUST FILTER",Point(0,50),1,2,Scalar(0,0,255),2);
+					else putText(liveFeed,"TOO MUCH NOISE! ADJUST FILTER",Point(0,50),1,2,Scalar(0,0,0),2);
 		}
 	}
 }
@@ -546,54 +611,6 @@ void setUpSerial()
 //==================== End Serial Initialization ============================================================
 }
 
-void makeCalibrationRectangle(int event, int x, int y, int flags, void* userdata)
-{
-	Mat* liveFeed = (Mat*)userdata;
-
-		if (event == CV_EVENT_LBUTTONDOWN && ifClicked == false)
-		{
-			//keep track of initial point clicked
-			initialClickPoint = cv::Point(x, y);
-			//user has begun dragging the mouse
-			ifClicked = true;
-		}
-		/* user is dragging the mouse */
-		if (event == CV_EVENT_MOUSEMOVE && ifClicked == true)
-		{
-			//keep track of current mouse point
-			endClickPoint = cv::Point(x, y);
-			//user has moved the mouse while clicking and dragging
-			mouseHasMoved = true;
-		}
-		/* user has released left button */
-		if (event == CV_EVENT_LBUTTONUP && ifClicked == true)
-		{
-			//set rectangle ROI to the rectangle that the user has selected
-			rectangleROI = Rect(initialClickPoint, endClickPoint);
-
-			//reset boolean variables
-			ifClicked = false;
-			mouseHasMoved = false;
-			rectangleIsSelected = true;
-		}
-
-		if (event == CV_EVENT_RBUTTONDOWN)
-		{
-			Hmin = 0;
-			Smin = 0;
-			Vmin = 0;
-			Hmax = 255;
-			Smax = 255;
-			Vmax = 255;
-
-		}
-		if (event == CV_EVENT_MBUTTONDOWN)
-		{
-			//Add code to save the rectangle into a pushbacked vector
-		}
-
-}
-
 
 void recordHSV(Mat frame, Mat HSVCalibration)
 {
@@ -613,6 +630,9 @@ void recordHSV(Mat frame, Mat HSVCalibration)
 					H_ROI_ALLVALUES.push_back((int)HSVCalibration.at<cv::Vec3b>(j, i)[0]);
 					S_ROI_ALLVALUES.push_back((int)HSVCalibration.at<cv::Vec3b>(j, i)[1]);
 					V_ROI_ALLVALUES.push_back((int)HSVCalibration.at<cv::Vec3b>(j, i)[2]);
+					B_ROI_ALLVALUES.push_back((int)frame.at<Vec3b>(j,i)[0]);
+					R_ROI_ALLVALUES.push_back((int)frame.at<Vec3b>(j,i)[1]);
+					G_ROI_ALLVALUES.push_back((int)frame.at<Vec3b>(j,i)[2]);
 				}
 			}
 		}
@@ -639,14 +659,36 @@ void recordHSV(Mat frame, Mat HSVCalibration)
 			cout << "Minimum Value Value: " << Vmin << endl;
 			cout << "Maximum Value Value:  " << Vmax << endl;
 		}
+		if (B_ROI_ALLVALUES.size()>0)
+		{
+			float Bmin = *std::min_element(B_ROI_ALLVALUES.begin(), B_ROI_ALLVALUES.end());
+			float Bmax = *std::min_element(B_ROI_ALLVALUES.begin(), B_ROI_ALLVALUES.end());
+			Bavg = (Bmin + Bmax)/2;
+			cout << "Our blue value is: " << Bavg << endl;
+		}
+				if (R_ROI_ALLVALUES.size()>0)
+		{
+			float Rmin = *std::min_element(R_ROI_ALLVALUES.begin(), R_ROI_ALLVALUES.end());
+			float Rmax = *std::min_element(R_ROI_ALLVALUES.begin(), R_ROI_ALLVALUES.end());
+			Ravg = (Rmin + Rmax)/2;
+			cout << "Our red value is: " << Ravg << endl;
+		}
+				if (G_ROI_ALLVALUES.size()>0)
+		{
+			float Gmin = *std::min_element(G_ROI_ALLVALUES.begin(), G_ROI_ALLVALUES.end());
+			float Gmax = *std::min_element(G_ROI_ALLVALUES.begin(), G_ROI_ALLVALUES.end());
+			Gavg = (Gmin + Gmax)/2;
+			cout << "Our green value is: " << Gavg << endl;
+		}
 	}
 
 	if (mouseHasMoved == true){
 		//if the mouse is held down, we will draw the click and dragged rectangle to the screen
-		rectangle(frame, initialClickPoint, cv::Point(endClickPoint.x, endClickPoint.y), cv::Scalar(0, 255, 0), 1, 8, 0);
+		rectangle(frame, initialClickPoint, cv::Point(endClickPoint.x, endClickPoint.y), cv::Scalar(100, 125, 92), .5 , 4, 0);
 	}
 	HSVMINS.push_back(Scalar(Hmin, Smin, Vmin));
 	HSVMAXS.push_back(Scalar(Hmax, Smax, Vmax));
+	BGRVALS.push_back(Scalar(Bavg,Ravg,Gavg));
 
 }
 
@@ -656,12 +698,13 @@ void getCurrentFoods(fstream &file, string line)
 	if(checkIfFileOpen(file)) return;
 	while( getline (file,line) )
 	{
-		float temp1, temp2;
-		sscanf(line.c_str(), "%s [%f, %f, %f, %f] [%f, %f, %f, %f]", Name, &HSVmintemp1, &HSVmintemp2, &HSVmintemp3, &temp1, &HSVmaxtemp1, &HSVmaxtemp2, &HSVmaxtemp3, &temp2);
-		cout << Name << HSVmintemp1 << HSVmintemp2 << HSVmintemp3;
+		float temp1, temp2, temp3;
+		sscanf(line.c_str(), "%s [%f, %f, %f, %f] [%f, %f, %f, %f] [%f, %f, %f, %f]", Name, &HSVmintemp1, &HSVmintemp2, &HSVmintemp3, &temp1, &HSVmaxtemp1, &HSVmaxtemp2, &HSVmaxtemp3, &temp2, &Btemp, &Gtemp, &Rtemp, &temp3);
+		//cout << Name << HSVmintemp1 << HSVmintemp2 << HSVmintemp3;
 		Names.push_back(Name);
 		HSVMins.push_back(Scalar(HSVmintemp1, HSVmintemp2, HSVmintemp3));
 		HSVMaxs.push_back(Scalar(HSVmaxtemp1, HSVmaxtemp2, HSVmaxtemp3));
+		BGRVals.push_back(Scalar(Btemp, Gtemp, Rtemp));
 	}
 	file.close();
 }
@@ -683,6 +726,7 @@ void loadLocalHSV()
 		{
 			if (LocalNames[k] == Names[j])
 			{
+				LocalBGRVals[k] = BGRVals[j];
 				LocalHSVMins[k] = HSVMins[j];
 				LocalHSVMaxs[k] = HSVMaxs[j];
 			}
@@ -700,17 +744,19 @@ void storeNewFoods(fstream& file, int i)
 					while ((clock()- now)/CLOCKS_PER_SEC <= 1)
 					{
 						makeCropAndCircle();
+						setMouseCallback(windowOriginal1, makeCalibrationRectangle, &liveFeed);
 						imshow(windowOriginal1,liveFeed);
 						recordHSV(liveFeed, HSV);
 						inRange(HSV, Scalar(Hmin, Smin, Vmin), Scalar(Hmax,Smax,Vmax), thresholdImg);
 						morphOps(thresholdImg);
 						imshow("Calibration", thresholdImg);
 						//trackingObjectCalibration(thresholdImg, HSV, liveFeed);
-						int c = waitKey(100);
-						if (c == 27 | c == 'q' | c == 'Q') break;
+						int c = waitKey(300);
+						if (c == 1048689) break;
 					}
 					LocalHSVMins[i] = HSVMINS[HSVMINS.size()-1];
 					LocalHSVMaxs[i] = HSVMAXS[HSVMAXS.size()-1];
+					//LocalBRGVals[i] = BGRVALS[BGRVALS.size()-1];
 
 					file.open("foodValues.txt", ios::in | ios::app | ios::out);
 					if(checkIfFileOpen(file))return;
@@ -723,6 +769,10 @@ void storeNewFoods(fstream& file, int i)
 					foodValues << " ";
 					foodValues << LocalHSVMaxs[i] << endl;
 					cout << LocalHSVMaxs[i] << endl;
+					//cout << " ";
+					//cout << LocalBGRVals[i];
+					//foodValues << " ";
+					//foodValues << LocalBGRVals[i] << endl;
 					file.close();
 				}
 }
@@ -731,6 +781,7 @@ void setClassValues(vector<Food>& theFood, int index)
 {
 	theFood.at(index).setHSVmin1(LocalHSVMins[index]);
 	theFood.at(index).setHSVmax1(LocalHSVMaxs[index]);
+	theFood.at(index).setColor(LocalBGRVals[index]);
 	// Add 2 more HSV assignments
 	theFood.at(index).setType(LocalNames[index]);
 	//cout << "In setClassValues: ";
@@ -773,21 +824,9 @@ void getInfoFromUser()
 		Foodies.push_back(Name);
 		LocalHSVMins.push_back(Scalar(0,0,0));
 		LocalHSVMaxs.push_back(Scalar(0,0,0));
+		LocalBGRVals.push_back(Scalar(0,0,0));
 	}
 }
-
-void calibrateVideo()
-{
-	capture.set(CV_CAP_PROP_FRAME_WIDTH,FRAME_WIDTH); // Set width
-	capture.set(CV_CAP_PROP_FRAME_HEIGHT,FRAME_HEIGHT); // Set height
-	namedWindow(windowOriginal1);
-	//namedWindow(windowOriginal2);
-	setMouseCallback(windowOriginal1, makeCalibrationRectangle, &liveFeed);
-	ifClicked = false; 
-	mouseHasMoved = false; 
-	rectangleIsSelected = false;
-}
-
 
 
 void shapeCount(vector<string> shapes, int& circleCount, int& triCount, int& rectCount, int& pentaCount)

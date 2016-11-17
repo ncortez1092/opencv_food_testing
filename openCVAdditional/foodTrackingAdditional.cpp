@@ -73,16 +73,16 @@ int main(int argc, char* argv[])
 			}
 		}
 
-		if (counttest % 70 == 0)
+		if (counttest % 10 == 0)
 		{
 			ThresholdImgs1.clear();
 			for (int i = 0; i < Foodies.size(); i++)
 			{
 				recreateMasks(Foodies, i);
-				cout << "In counttest loop: ";
-				cout << Foodies.at(i).getHSVmin1() << ", " << Foodies.at(i).getHSVmax1() << endl;
-				cout << "Iterration: " << i << endl;
-				waitKey(1000);
+				//cout << "In counttest loop: ";
+				//cout << Foodies.at(i).getHSVmin1() << ", " << Foodies.at(i).getHSVmax1() << endl;
+				//cout << "Iterration: " << i << endl;
+				waitKey(10);
 
 			}
 		}
@@ -102,7 +102,8 @@ int main(int argc, char* argv[])
 		//}
 		counttest += 1;
 		imshow(windowOriginal1,liveFeed);
-		waitKey(50);
+		int key = waitKey(50);
+		if (key == 27) break;
 	}
 	return 0;
 } 	

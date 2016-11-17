@@ -51,17 +51,10 @@ int main(int argc, char* argv[])
 	while(1)
 	{
 		makeCropAndCircle();
-		for (int i = 0; i < 10; i++)
-		{
-			Mat threshTemp;
-			inRange(HSV, Scalar(3,159,39), Scalar(20,255,197), threshTemp);
-			morphOps(threshTemp);
-			imshow("ThreshTemp_1", threshTemp);
-
-
-		}
-					int c = waitKey(30);
-					if (c == 27 | c == 'q' | c == 'Q') break;
+		imshow("Normal", liveFeed);
+		int key = waitKey(30);
+		cout << "this is" << key << endl;
+		if (key == 1048689) break;
 		
 	} 	
 cout << "We broke out!" << endl;

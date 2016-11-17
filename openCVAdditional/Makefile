@@ -111,29 +111,29 @@ Test/fast:
 	$(MAKE) -f CMakeFiles/Test.dir/build.make CMakeFiles/Test.dir/build
 .PHONY : Test/fast
 
-functionTesting.o: functionTesting.cpp.o
-.PHONY : functionTesting.o
+foodTrackingAdditional.o: foodTrackingAdditional.cpp.o
+.PHONY : foodTrackingAdditional.o
 
 # target to build an object file
-functionTesting.cpp.o:
-	$(MAKE) -f CMakeFiles/Test.dir/build.make CMakeFiles/Test.dir/functionTesting.cpp.o
-.PHONY : functionTesting.cpp.o
+foodTrackingAdditional.cpp.o:
+	$(MAKE) -f CMakeFiles/Test.dir/build.make CMakeFiles/Test.dir/foodTrackingAdditional.cpp.o
+.PHONY : foodTrackingAdditional.cpp.o
 
-functionTesting.i: functionTesting.cpp.i
-.PHONY : functionTesting.i
+foodTrackingAdditional.i: foodTrackingAdditional.cpp.i
+.PHONY : foodTrackingAdditional.i
 
 # target to preprocess a source file
-functionTesting.cpp.i:
-	$(MAKE) -f CMakeFiles/Test.dir/build.make CMakeFiles/Test.dir/functionTesting.cpp.i
-.PHONY : functionTesting.cpp.i
+foodTrackingAdditional.cpp.i:
+	$(MAKE) -f CMakeFiles/Test.dir/build.make CMakeFiles/Test.dir/foodTrackingAdditional.cpp.i
+.PHONY : foodTrackingAdditional.cpp.i
 
-functionTesting.s: functionTesting.cpp.s
-.PHONY : functionTesting.s
+foodTrackingAdditional.s: foodTrackingAdditional.cpp.s
+.PHONY : foodTrackingAdditional.s
 
 # target to generate assembly for a file
-functionTesting.cpp.s:
-	$(MAKE) -f CMakeFiles/Test.dir/build.make CMakeFiles/Test.dir/functionTesting.cpp.s
-.PHONY : functionTesting.cpp.s
+foodTrackingAdditional.cpp.s:
+	$(MAKE) -f CMakeFiles/Test.dir/build.make CMakeFiles/Test.dir/foodTrackingAdditional.cpp.s
+.PHONY : foodTrackingAdditional.cpp.s
 
 # Help Target
 help:
@@ -144,9 +144,9 @@ help:
 	@echo "... Test"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
-	@echo "... functionTesting.o"
-	@echo "... functionTesting.i"
-	@echo "... functionTesting.s"
+	@echo "... foodTrackingAdditional.o"
+	@echo "... foodTrackingAdditional.i"
+	@echo "... foodTrackingAdditional.s"
 .PHONY : help
 
 
