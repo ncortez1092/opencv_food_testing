@@ -90,7 +90,6 @@ int main(int argc, char* argv[])
 
 			}
 		}
-
 		trackingObjects(Foodies, ThresholdImgs1, HSV, liveFeed);
 		//inRange(HSV,PotSticker.getHSVmin1(), PotSticker.getHSVmax1(),thresholdImg3);
 		//inRange(HSV,PotSticker.getHSVmin2(), PotSticker.getHSVmax2(),thresholdImg4);
@@ -100,8 +99,8 @@ int main(int argc, char* argv[])
 		//PotSticker.setBoarder();
 		//char const* PotStickerChar = relayCoords(Foodies, liveFeed);
 		vector<string> messages = relayCoords(Foodies, liveFeed);
-		//cout << messages;
-		if(counttest % 40 == 0)
+		//cout << messages; 	
+		if(counttest % 60 == 0)
 		{
 			for (int i = 0; i < messages.size(); i++)
 			{
@@ -110,6 +109,11 @@ int main(int argc, char* argv[])
 				cout << "Sending robot..: " << myChar << endl;
 			}
 		}
+		//for (int i = 0; i < messages.size(); i++)
+		//{
+		//	cout << messages[i];
+		//	cout << i;
+		//}
 		counttest += 1;
 		imshow(windowOriginal1,liveFeed);
 		int key = waitKey(50);

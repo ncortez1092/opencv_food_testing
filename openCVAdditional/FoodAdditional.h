@@ -114,9 +114,12 @@ int Gavg = 125;
 int Ravg = 125;
 int counttest = 0;
 int ingredientNum;
-float HSVmintemp1, HSVmintemp2, HSVmintemp3, HSVmaxtemp1, HSVmaxtemp2, HSVmaxtemp3, Btemp, Gtemp, Rtemp;
 vector<int> H_ROI_ALLVALUES, S_ROI_ALLVALUES, V_ROI_ALLVALUES, B_ROI_ALLVALUES, R_ROI_ALLVALUES, G_ROI_ALLVALUES;
-vector<Scalar> HSVMins, HSVMaxs, BGRVals, LocalHSVMins, LocalHSVMaxs, LocalBGRVals;
+vector<Scalar> BGRVals, LocalBGRVals,
+			   HSVMins1, HSVMins2, HSVMins3,
+			   HSVMaxs1, HSVMaxs2, HSVMaxs3,
+			   LocalHSVMins1, LocalHSVMins2, LocalHSVMins3,
+			   LocalHSVMaxs1, LocalHSVMaxs2, LocalHSVMaxs3;
 
 
 // Size of the webcam feed
@@ -777,13 +780,30 @@ void getCurrentFoods(fstream &file, string line)
 	if(checkIfFileOpen(file)) return;
 	while( getline (file,line) )
 	{
-		float temp1, temp2, temp3;
+		float temp, HSVmin1temp1, HSVmin1temp2, HSVmin1temp3,
+			  HSVmin2temp1, HSVmin2temp2, HSVmin2temp3, 
+			  HSVmin3temp1, HSVmin3temp2, HSVmin3temp3, 
+			  HSVmax1temp1, HSVmax1temp2, HSVmax1temp3, 
+			  HSVmax2temp1, HSVmax2temp2, HSVmax2temp3, 
+			  HSVmax3temp1, HSVmax3temp2, HSVmax3temp3,
+			  Btemp, Gtemp, Rtemp;
 		Btemp = 120; Gtemp = 120; Rtemp = 120;
-		sscanf(line.c_str(), "%s [%f, %f, %f, %f] [%f, %f, %f, %f] [%f, %f, %f, %f]", Name, &HSVmintemp1, &HSVmintemp2, &HSVmintemp3, &temp1, &HSVmaxtemp1, &HSVmaxtemp2, &HSVmaxtemp3, &temp2, &Btemp, &Gtemp, &Rtemp, &temp3);
+		sscanf(line.c_str(), "%s [%f, %f, %f, %f] [%f, %f, %f, %f] [%f, %f, %f, %f] [%f, %f, %f, %f] [%f, %f, %f, %f] [%f, %f, %f, %f] [%f, %f, %f, %f]",
+				Name, &HSVmin1temp1, &HSVmin1temp2, &HSVmin1temp3, &temp,
+					  &HSVmin2temp1, &HSVmin2temp2, &HSVmin2temp3, &temp,
+					  &HSVmin3temp1, &HSVmin3temp2, &HSVmin3temp3, &temp,
+					  &HSVmax1temp1, &HSVmax1temp2, &HSVmax1temp3, &temp, 
+					  &HSVmax2temp1, &HSVmax2temp2, &HSVmax2temp3, &temp,
+					  &HSVmax3temp1, &HSVmax3temp2, &HSVmax3temp3, &temp,
+					  &Btemp, &Gtemp, &Rtemp, &temp);
 		//cout << Name << HSVmintemp1 << HSVmintemp2 << HSVmintemp3;
 		Names.push_back(Name);
-		HSVMins.push_back(Scalar(HSVmintemp1, HSVmintemp2, HSVmintemp3));
-		HSVMaxs.push_back(Scalar(HSVmaxtemp1, HSVmaxtemp2, HSVmaxtemp3));
+		HSVMins1.push_back(Scalar(HSVmin1temp1, HSVmin1temp2, HSVmin1temp3));
+		HSVMins2.push_back(Scalar(HSVmin2temp1, HSVmin2temp2, HSVmin2temp3));
+		HSVMins3.push_back(Scalar(HSVmin3temp1, HSVmin3temp2, HSVmin3temp3));
+		HSVMaxs1.push_back(Scalar(HSVmax1temp1, HSVmax1temp2, HSVmax1temp3));
+		HSVMaxs2.push_back(Scalar(HSVmax2temp1, HSVmax2temp2, HSVmax2temp3));
+		HSVMaxs3.push_back(Scalar(HSVmax3temp1, HSVmax3temp2, HSVmax3temp3));
 		BGRVals.push_back(Scalar(Btemp, Gtemp, Rtemp));
 		//for (int i = 0; i < BGRVals.size(); i++)
 		//{
@@ -812,8 +832,12 @@ void loadLocalHSV()
 			if (LocalNames[k] == Names[j])
 			{
 				LocalBGRVals[k] = BGRVals[j];
-				LocalHSVMins[k] = HSVMins[j];
-				LocalHSVMaxs[k] = HSVMaxs[j];
+				LocalHSVMins1[k] = HSVMins1[j];
+				LocalHSVMins2[k] = HSVMins2[j];
+				LocalHSVMins3[k] = HSVMins3[j];
+				LocalHSVMaxs1[k] = HSVMaxs1[j];
+				LocalHSVMaxs2[k] = HSVMaxs2[j];
+				LocalHSVMaxs3[k] = HSVMaxs3[j];
 			}
 		}
 	}
@@ -822,7 +846,7 @@ void loadLocalHSV()
 
 void storeNewFoods(fstream& file, int i)
 {
-	if(LocalHSVMins[i] == Scalar(0,0,0))
+	if(LocalHSVMins1[i] == Scalar(0,0,0))
 				{	
 					cout << "Make rectangle in center of food " << LocalNames[i] << " until it tracks, then hit the Q key" << endl;
 					unsigned long now = clock();
@@ -839,37 +863,86 @@ void storeNewFoods(fstream& file, int i)
 						int c = waitKey(30);
 						if (c == 1048689) break;
 					}
-					LocalHSVMins[i] = HSVMINS[HSVMINS.size()-1];
-					LocalHSVMaxs[i] = HSVMAXS[HSVMAXS.size()-1];
-					//cout << LocalBGRVals[i] << endl;
-					//cout << BGRVALS[BGRVALS.size()-1];
+					LocalHSVMins1[i] = HSVMINS[HSVMINS.size()-1];
+					LocalHSVMaxs1[i] = HSVMAXS[HSVMAXS.size()-1];
 					LocalBGRVals[i] = BGRVALS[BGRVALS.size()-1];
+
+					cout << "Move food " << LocalNames[i] << " and make another rectangle until it tracks, then hit the Q key" << endl;
+					now = clock();
+					while ((clock()- now)/CLOCKS_PER_SEC <= 1000)
+					{
+						makeCropAndCircle();
+						setMouseCallback(windowOriginal1, makeCalibrationRectangle, &liveFeed);
+						imshow(windowOriginal1,liveFeed);
+						recordHSV(liveFeed, HSV);
+						inRange(HSV, Scalar(Hmin, Smin, Vmin), Scalar(Hmax,Smax,Vmax), thresholdImg);
+						morphOps(thresholdImg);
+						imshow("Calibration", thresholdImg);
+						//trackingObjectCalibration(thresholdImg, HSV, liveFeed);
+						int c = waitKey(30);
+						if (c == 1048689) break;
+					}
+
+					LocalHSVMins2[i] = HSVMINS[HSVMINS.size()-1];
+					LocalHSVMaxs2[i] = HSVMAXS[HSVMAXS.size()-1];
+					now = clock();
+					while ((clock()- now)/CLOCKS_PER_SEC <= 1000)
+					{
+						makeCropAndCircle();
+						setMouseCallback(windowOriginal1, makeCalibrationRectangle, &liveFeed);
+						imshow(windowOriginal1,liveFeed);
+						recordHSV(liveFeed, HSV);
+						inRange(HSV, Scalar(Hmin, Smin, Vmin), Scalar(Hmax,Smax,Vmax), thresholdImg);
+						morphOps(thresholdImg);
+						imshow("Calibration", thresholdImg);
+						//trackingObjectCalibration(thresholdImg, HSV, liveFeed);
+						int c = waitKey(30);
+						if (c == 1048689) break;
+					}
+
+					LocalHSVMins3[i] = HSVMINS[HSVMINS.size()-1];
+					LocalHSVMaxs3[i] = HSVMAXS[HSVMAXS.size()-1];
 
 					file.open("foodValues.txt", ios::in | ios::app | ios::out);
 					if(checkIfFileOpen(file))return;
 					cout << "Adding.. " << endl;
 					foodValues << LocalNames[i];
+					foodValues << " ";
 					cout << LocalNames[i] << " ";
+					foodValues << LocalHSVMins1[i];
 					foodValues << " ";
-					foodValues << LocalHSVMins[i];
-					cout << LocalHSVMins[i] << " ";
+					cout << LocalHSVMins1[i] << " ";
+					foodValues << LocalHSVMins2[i];
 					foodValues << " ";
-					foodValues << LocalHSVMaxs[i];
-					cout << LocalHSVMaxs[i];
-					cout << " ";
-					cout << LocalBGRVals[i] << endl;
+					cout << LocalHSVMins2[i] << " ";
+					foodValues << LocalHSVMins3[i];
 					foodValues << " ";
+					cout << LocalHSVMins3[i] << " ";
+					foodValues << LocalHSVMaxs1[i];
+					foodValues << " ";
+					cout << LocalHSVMaxs1[i] << " ";
+					foodValues << LocalHSVMaxs2[i];
+					foodValues << " ";
+					cout << LocalHSVMaxs2[i] << " ";
+					foodValues << LocalHSVMaxs3[i];
+					foodValues << " ";
+					cout << LocalHSVMaxs3[i] << " ";
 					foodValues << LocalBGRVals[i] << endl;
+					cout << LocalBGRVals[i] << endl;
+
 					file.close();
 				}
 }
 
 void setClassValues(vector<Food>& theFood, int index)
 {
-	theFood.at(index).setHSVmin1(LocalHSVMins[index]);
-	theFood.at(index).setHSVmax1(LocalHSVMaxs[index]);
+	theFood.at(index).setHSVmin1(LocalHSVMins1[index]);
+	theFood.at(index).setHSVmax1(LocalHSVMaxs1[index]);
+	theFood.at(index).setHSVmin2(LocalHSVMins2[index]);
+	theFood.at(index).setHSVmax2(LocalHSVMaxs2[index]);
+	theFood.at(index).setHSVmin3(LocalHSVMins3[index]);
+	theFood.at(index).setHSVmax3(LocalHSVMaxs3[index]);
 	theFood.at(index).setColor(LocalBGRVals[index]);
-	// Add 2 more HSV assignments
 	theFood.at(index).setType(LocalNames[index]);
 	//cout << "In setClassValues: ";
 	//cout << theFood.at(index).getHSVmin1() << ", " << theFood.at(index).getHSVmax1() << ", " << theFood.at(index).getType()<< endl;
@@ -892,10 +965,14 @@ void releaseMasks(vector<Mat>& theMask)
 }
 void recreateMasks(vector<Food>& theFood, int index)
 {	
-	Mat threshTemp;
-	inRange(HSV,theFood.at(index).getHSVmin1(),theFood.at(index).getHSVmax1(), threshTemp);
-	morphOps(threshTemp);
-	ThresholdImgs1.push_back(threshTemp);
+	Mat threshTemp1, threshTemp2, threshTemp3, threshTemp4, threshTemp5;
+	inRange(HSV,theFood.at(index).getHSVmin1(),theFood.at(index).getHSVmax1(), threshTemp1);
+	inRange(HSV,theFood.at(index).getHSVmin2(),theFood.at(index).getHSVmax2(), threshTemp2);
+	inRange(HSV,theFood.at(index).getHSVmin3(),theFood.at(index).getHSVmax3(), threshTemp3);
+	bitwise_or(threshTemp1, threshTemp2, threshTemp4);
+	bitwise_or(threshTemp3, threshTemp4, threshTemp5);
+	morphOps(threshTemp5);
+	ThresholdImgs1.push_back(threshTemp5);
 }
 
 void getInfoFromUser()
@@ -909,8 +986,13 @@ void getInfoFromUser()
 		LocalNames.push_back(Name);
 		Food Name;
 		Foodies.push_back(Name);
-		LocalHSVMins.push_back(Scalar(0,0,0));
-		LocalHSVMaxs.push_back(Scalar(0,0,0));
+		LocalHSVMins1.push_back(Scalar(0,0,0));
+		LocalHSVMaxs1.push_back(Scalar(0,0,0));
+		LocalHSVMins2.push_back(Scalar(0,0,0));
+		LocalHSVMaxs2.push_back(Scalar(0,0,0));
+		LocalHSVMins3.push_back(Scalar(0,0,0));
+		LocalHSVMaxs3.push_back(Scalar(0,0,0));
+
 		LocalBGRVals.push_back(Scalar(0,0,0));
 	}
 }
