@@ -98,9 +98,12 @@ int main(int argc, char* argv[])
 		//trackingObject(PotSticker, thresholdImg9, HSV, liveFeed);
 		//PotSticker.setBoarder();
 		//char const* PotStickerChar = relayCoords(Foodies, liveFeed);
+		char thisChar[64];
+		tcflush(serialPort, TCIOFLUSH);
+		read(serialPort, thisChar, 62);
 		vector<string> messages = relayCoords(Foodies, liveFeed);
 		//cout << messages; 	
-		if(counttest % 60 == 0)
+		if(*thisChar == '>')
 		{
 			for (int i = 0; i < messages.size(); i++)
 			{
@@ -109,11 +112,7 @@ int main(int argc, char* argv[])
 				cout << "Sending robot..: " << myChar << endl;
 			}
 		}
-		//for (int i = 0; i < messages.size(); i++)
-		//{
-		//	cout << messages[i];
-		//	cout << i;
-		//}
+
 		counttest += 1;
 		imshow(windowOriginal1,liveFeed);
 		int key = waitKey(50);
