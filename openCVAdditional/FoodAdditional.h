@@ -103,6 +103,12 @@ int Smin = 0;
 int Smax = 256;
 int Vmin = 0;
 int Vmax = 256;
+int Bmin = 0;
+int Bmax = 255;
+int Rmin = 0;
+int Rmax = 255;
+int Gmin = 0;
+int Gmax = 255;
 int Bavg = 125;
 int Gavg = 125;
 int Ravg = 125;
@@ -119,7 +125,7 @@ const int FRAME_HEIGHT = 480;
 
 // Other obvious declarations
 const int MAX_NUM_OBJECTS = 50; // Max number of objects
-const int MIN_OBJECT_AREA = 40*40; // Min area of an object we will bother detecting
+const int MIN_OBJECT_AREA = 10*10; // Min area of an object we will bother detecting
 const int MAX_OBJECT_AREA = (FRAME_HEIGHT*FRAME_WIDTH) / 1.5; // Max area of an object we will detect
 
 // Window names for our program
@@ -175,10 +181,10 @@ void makeCropAndCircle(int cropHeight = 280, int cropWidth = 210, int cropX = 18
 
 		capture.read(temp);
 		cv::Mat mask = cv::Mat::zeros( temp.rows, temp.cols, CV_8UC1 );
-		Point center = Point(330, 177);
-		float radius = 80;
+		Point center = Point(330, 196);
+		float radius = 85;
 		cropX = 330 - radius;
-		cropY = 177 - radius;
+		cropY = 196 - radius;
 		cropHeight = 2*radius;
 		cropWidth = 2*radius;
 		Rect myCropROI(cropX, cropY , cropHeight , cropWidth);
@@ -255,8 +261,81 @@ void calibrateVideo()
 
 
 
-char const* relayCoords(Food theFood, Mat& frame){
+vector<string> relayCoords(vector<Food> theFood, Mat& frame){
+	string oneMessage;
+	vector<string> message;
+	for (int i = 0; i < theFood.size(); i++)
+	// This will return a char const* of the coords to whatever food we are using. It will then be passed to the
+	// Serial after. Which is why it needs to be char const*.
+		{	
+			int row = frame.rows; // x pixels, for example it will be 640 for a 640 x 480 img
+			int col = frame.cols; // y pixels, for example it will be 480 for a 640 x 480 img
+			int y = theFood.at(i).getXPos();
+			int x = theFood.at(i).getYPos();
+			float Area = theFood.at(i).getArea();
+			int xCoord, yCoord;
+			string myChar;
+
+			string type = theFood.at(i).getType();
+			if (type == "Broccoli") {myChar = 'q';}
+			if (type == "Carrot") {myChar = 'c';}
+			if (type == "Bread") {myChar = 'b';}
+			if (type == "PotSticker") {myChar = 'p';}
+			if (type == "Meat") {myChar = 's';}
+			if (type == "TriangleMeat") {myChar = 't';}
+			float norm = 0.50;
+			int x_0 = col/2;
+			int y_0 = row/2;
+
+			if (x < x_0 && y < y_0) // Quadrant 1
+				{
+					xCoord = (x - x_0)*norm;
+					yCoord = (y_0 - y)*norm;
+				}
+			else if (x > x_0 && y < y_0) // Quadrant 2
+				{
+					xCoord = (x - x_0)*norm;
+					yCoord = (y_0 - y)*norm;
+				}
+			else if (x < x_0 && y > y_0) // Quadrant 3
+				{
+					xCoord = (x - x_0)*norm; 
+					yCoord = (y_0 - y)*norm;
+				}
+			else if (x > x_0 && y > y_0) // Quadrant 4
+				{
+					xCoord = (x - x_0)*norm;
+					yCoord = (y_0 - y)*norm;
+				}
+			else if (x == x_0 && y == y_0)
+				{
+					xCoord = 0;
+					yCoord = 0;
+				}
+			float scale = frame.rows*frame.cols;
+			Area = Area/(scale-scale/6); // This will be a percentage relative to the area of the pot
+			Area = (int)100*Area;
+			if (Area < 1) Area = 1;
+			//Area = (int)(Area*100)/100.0F;
+
+			if (xCoord >= -75 && yCoord >= -75 && xCoord <= 75 && yCoord <= 75)
+			{
+				if(xCoord >= 66) xCoord = 66;
+				if(xCoord <= -66) xCoord = -66;
+				if(yCoord >= 66) yCoord = 66;
+				if(yCoord <= -66) yCoord = 66;
+				oneMessage = type  + " " + "\n" + " " + intToString(xCoord) + ", " + intToString(yCoord) + ", " + intToString(Area);
+			//string message = intToString(theFood.getXPos())+ ", " + intToString(theFood.getYPos());
+			//char const* pchar = message.at(i).c_str();
+				message.push_back(oneMessage);
+			}
+		}
+
+					return message;
+}
 /*
+char const* relayCoords(Food theFood, Mat& frame){
+
 Below is the picture coords 4 quadrants. The idea is we need
  to change them to a similar format as that of GantryProto1.h
  The below is after the initial shift (x - 320, y - 240)
@@ -309,7 +388,7 @@ wrt the front of the robot, facing the cookpot's face.
 
 
 
-*/
+
 
 // This will return a char const* of the coords to whatever food we are using. It will then be passed to the
 // Serial after. Which is why it needs to be char const*.
@@ -365,7 +444,7 @@ wrt the front of the robot, facing the cookpot's face.
 		//string message = intToString(theFood.getXPos())+ ", " + intToString(theFood.getYPos());
 		char const* pchar = message.c_str();
 		return pchar;
-}
+}*/
 string floatToString(float number)
 {
 	stringstream s;
@@ -661,22 +740,22 @@ void recordHSV(Mat frame, Mat HSVCalibration)
 		}
 		if (B_ROI_ALLVALUES.size()>0)
 		{
-			float Bmin = *std::min_element(B_ROI_ALLVALUES.begin(), B_ROI_ALLVALUES.end());
-			float Bmax = *std::min_element(B_ROI_ALLVALUES.begin(), B_ROI_ALLVALUES.end());
+			Bmin = *std::min_element(B_ROI_ALLVALUES.begin(), B_ROI_ALLVALUES.end());
+			Bmax = *std::min_element(B_ROI_ALLVALUES.begin(), B_ROI_ALLVALUES.end());
 			Bavg = (Bmin + Bmax)/2;
 			cout << "Our blue value is: " << Bavg << endl;
 		}
 				if (R_ROI_ALLVALUES.size()>0)
 		{
-			float Rmin = *std::min_element(R_ROI_ALLVALUES.begin(), R_ROI_ALLVALUES.end());
-			float Rmax = *std::min_element(R_ROI_ALLVALUES.begin(), R_ROI_ALLVALUES.end());
+			Rmin = *std::min_element(R_ROI_ALLVALUES.begin(), R_ROI_ALLVALUES.end());
+			Rmax = *std::min_element(R_ROI_ALLVALUES.begin(), R_ROI_ALLVALUES.end());
 			Ravg = (Rmin + Rmax)/2;
 			cout << "Our red value is: " << Ravg << endl;
 		}
 				if (G_ROI_ALLVALUES.size()>0)
 		{
-			float Gmin = *std::min_element(G_ROI_ALLVALUES.begin(), G_ROI_ALLVALUES.end());
-			float Gmax = *std::min_element(G_ROI_ALLVALUES.begin(), G_ROI_ALLVALUES.end());
+			int Gmin = *std::min_element(G_ROI_ALLVALUES.begin(), G_ROI_ALLVALUES.end());
+			int Gmax = *std::min_element(G_ROI_ALLVALUES.begin(), G_ROI_ALLVALUES.end());
 			Gavg = (Gmin + Gmax)/2;
 			cout << "Our green value is: " << Gavg << endl;
 		}
@@ -688,7 +767,7 @@ void recordHSV(Mat frame, Mat HSVCalibration)
 	}
 	HSVMINS.push_back(Scalar(Hmin, Smin, Vmin));
 	HSVMAXS.push_back(Scalar(Hmax, Smax, Vmax));
-	BGRVALS.push_back(Scalar(Bavg,Ravg,Gavg));
+	BGRVALS.push_back(Scalar(Bavg,Gavg,Ravg));
 
 }
 
@@ -699,12 +778,18 @@ void getCurrentFoods(fstream &file, string line)
 	while( getline (file,line) )
 	{
 		float temp1, temp2, temp3;
+		Btemp = 120; Gtemp = 120; Rtemp = 120;
 		sscanf(line.c_str(), "%s [%f, %f, %f, %f] [%f, %f, %f, %f] [%f, %f, %f, %f]", Name, &HSVmintemp1, &HSVmintemp2, &HSVmintemp3, &temp1, &HSVmaxtemp1, &HSVmaxtemp2, &HSVmaxtemp3, &temp2, &Btemp, &Gtemp, &Rtemp, &temp3);
 		//cout << Name << HSVmintemp1 << HSVmintemp2 << HSVmintemp3;
 		Names.push_back(Name);
 		HSVMins.push_back(Scalar(HSVmintemp1, HSVmintemp2, HSVmintemp3));
 		HSVMaxs.push_back(Scalar(HSVmaxtemp1, HSVmaxtemp2, HSVmaxtemp3));
 		BGRVals.push_back(Scalar(Btemp, Gtemp, Rtemp));
+		//for (int i = 0; i < BGRVals.size(); i++)
+		//{
+		//	cout << "In getCurrentFoods " << i;
+		//	cout << BGRVals[i] << endl;
+		//}
 	}
 	file.close();
 }
@@ -741,7 +826,7 @@ void storeNewFoods(fstream& file, int i)
 				{	
 					cout << "Make rectangle in center of food " << LocalNames[i] << " until it tracks, then hit the Q key" << endl;
 					unsigned long now = clock();
-					while ((clock()- now)/CLOCKS_PER_SEC <= 1)
+					while ((clock()- now)/CLOCKS_PER_SEC <= 1000)
 					{
 						makeCropAndCircle();
 						setMouseCallback(windowOriginal1, makeCalibrationRectangle, &liveFeed);
@@ -751,12 +836,14 @@ void storeNewFoods(fstream& file, int i)
 						morphOps(thresholdImg);
 						imshow("Calibration", thresholdImg);
 						//trackingObjectCalibration(thresholdImg, HSV, liveFeed);
-						int c = waitKey(300);
+						int c = waitKey(30);
 						if (c == 1048689) break;
 					}
 					LocalHSVMins[i] = HSVMINS[HSVMINS.size()-1];
 					LocalHSVMaxs[i] = HSVMAXS[HSVMAXS.size()-1];
-					//LocalBRGVals[i] = BGRVALS[BGRVALS.size()-1];
+					//cout << LocalBGRVals[i] << endl;
+					//cout << BGRVALS[BGRVALS.size()-1];
+					LocalBGRVals[i] = BGRVALS[BGRVALS.size()-1];
 
 					file.open("foodValues.txt", ios::in | ios::app | ios::out);
 					if(checkIfFileOpen(file))return;
@@ -767,12 +854,12 @@ void storeNewFoods(fstream& file, int i)
 					foodValues << LocalHSVMins[i];
 					cout << LocalHSVMins[i] << " ";
 					foodValues << " ";
-					foodValues << LocalHSVMaxs[i] << endl;
-					cout << LocalHSVMaxs[i] << endl;
-					//cout << " ";
-					//cout << LocalBGRVals[i];
-					//foodValues << " ";
-					//foodValues << LocalBGRVals[i] << endl;
+					foodValues << LocalHSVMaxs[i];
+					cout << LocalHSVMaxs[i];
+					cout << " ";
+					cout << LocalBGRVals[i] << endl;
+					foodValues << " ";
+					foodValues << LocalBGRVals[i] << endl;
 					file.close();
 				}
 }

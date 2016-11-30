@@ -21,8 +21,8 @@ Food::Food(string name)
 	}
 	if (name == "PotSticker")
 	{
-		this->setHSVmin1(Scalar(18,195,94));
-		this->setHSVmax1(Scalar(24,255,159));
+		this->setHSVmin1(Scalar(18,148,69));
+		this->setHSVmax1(Scalar(24,244,166));
 		this->setHSVmin2(Scalar(20, 138, 66));
 		this->setHSVmin2(Scalar(26,255,140));
 		this->setHSVmin3(Scalar(18,187,65));

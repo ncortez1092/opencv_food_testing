@@ -66,6 +66,10 @@ int main(int argc, char* argv[])
 			while (i < Foodies.size())
 			{
 				loadLocalHSV();
+				//cout << "after loadLocalHSV";
+				//cout << LocalHSVMins[i];
+				//cout << LocalBGRVals[i] << endl;
+				//cout << LocalHSVMins.size() << LocalBGRVals.size();
 				storeNewFoods(foodValues, i);
 				setClassValues(Foodies, i);
 				//createMasks(Foodies, i);
@@ -94,12 +98,18 @@ int main(int argc, char* argv[])
 		//morphOps(thresholdImg9); 	
 		//trackingObject(PotSticker, thresholdImg9, HSV, liveFeed);
 		//PotSticker.setBoarder();
-		//char const* PotStickerChar = relayCoords(PotSticker, liveFeed);
-		//if(counttest % 150 == 0 && sizeof(PotStickerChar) > 4)
-		//{
-		//	write(serialPort, PotStickerChar, 62);
-		//	cout << PotStickerChar << endl;
-		//}
+		//char const* PotStickerChar = relayCoords(Foodies, liveFeed);
+		vector<string> messages = relayCoords(Foodies, liveFeed);
+		//cout << messages;
+		if(counttest % 40 == 0)
+		{
+			for (int i = 0; i < messages.size(); i++)
+			{
+				char const* myChar = messages.at(i).c_str();
+				write(serialPort, myChar, 62);
+				cout << "Sending robot..: " << myChar << endl;
+			}
+		}
 		counttest += 1;
 		imshow(windowOriginal1,liveFeed);
 		int key = waitKey(50);
