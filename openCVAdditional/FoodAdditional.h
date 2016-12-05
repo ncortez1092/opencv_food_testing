@@ -751,8 +751,8 @@ void setUpSerial()
  	//   this program from "owning" the port and to enable receipt of data.
  	//   Also, it holds the settings for number of data bits, parity, stop bits,
 	//   and hardware flow control. 
-	portOptions.c_cflag |= CLOCAL | CREAD | ~CSIZE | CS8 | ~PARENB | ~CSTOPB;
-	portOptions.c_iflag = IGNPAR | ICRNL | BRKINT;
+	//portOptions.c_cflag = CLOCAL | CREAD | ~CSIZE | CS8 | ~PARENB | ~CSTOPB;
+	//portOptions.c_iflag = IGNPAR | ICRNL | BRKINT;
 	portOptions.c_oflag = 0;
 	portOptions.c_cc[VTIME]    = 0;   /* inter-character timer unused */
     portOptions.c_cc[VMIN]     = 1;   /* blocking read until 5 chars received */
@@ -1071,15 +1071,14 @@ void getInfoFromUser()
 		LocalHSVMaxs2.push_back(Scalar(0,0,0));
 		LocalHSVMins3.push_back(Scalar(0,0,0));
 		LocalHSVMaxs3.push_back(Scalar(0,0,0));
-
 		LocalBGRVals.push_back(Scalar(0,0,0));
 	}
 }
 
 string convertBufToString(char buf[64])
 {
-	res = read(serialPort,buf,sizeof(buf) - 1);
-	buf[res] = '\0';
+	res = read(serialPort,buf,sizeof(buf));
+	buf[res] = 0;
 	string tempString = string(buf);
 	return tempString;
 }
@@ -1091,6 +1090,7 @@ string listOfStrings(int ingredientNum)
 	{
 		tempString += LocalNames[i] + " ";
 	}
+	tempString += "\n";
 	return tempString;
 }
 

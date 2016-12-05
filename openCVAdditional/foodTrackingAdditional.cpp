@@ -91,12 +91,15 @@ int main(int argc, char* argv[])
 			int FoodNum = 10000;
 			if(tempString == "numFood") STOP_NUM = false;
 			else if(tempString == ">") STOP = false;
-			else if(tempString == "whichStrings") STOP_STRINGS = false;
+			else if(tempString == "which") STOP_STRINGS = false;
 			else
 			{
 				for (int i = 0; i < LocalNames.size(); i++)
 				{
+					cout << LocalNames[i];
 					FoodNum = (tempString == LocalNames[i]) ? i : 10000;
+					if (FoodNum != 10000) break;
+					cout << FoodNum;
 				}
 				if (FoodNum != 10000) // 10000 arbitrary large num that theres no way we would cook this much foods
 				{
