@@ -89,12 +89,18 @@ static const char* portName = "/dev/ttyACM0";
 	int serialPort;
 	struct termios portOptions;
 
+char buf[64];
+int res;
+volatile int STOP = true;
+volatile int STOP_NUM = true;
+volatile int STOP_STRINGS = true;
 // This is for our text file
 fstream foodValues;
 
 VideoCapture capture(1);
 
 bool ifClicked, mouseHasMoved, rectangleIsSelected;
+string whichStrings;
 
 //These are used for HSV detection, and will be used on our trackbars
 int Hmin = 0;
@@ -262,6 +268,73 @@ void calibrateVideo()
 	rectangleIsSelected = false;
 }
 
+
+string relayCoord(Food theFood, Mat& frame){
+	string oneMessage;
+			int row = frame.rows; // x pixels, for example it will be 640 for a 640 x 480 img
+			int col = frame.cols; // y pixels, for example it will be 480 for a 640 x 480 img
+			int y = theFood.getXPos();
+			int x = theFood.getYPos();
+			float Area = theFood.getArea();
+			int xCoord, yCoord;
+			string myChar;
+
+			string type = theFood.getType();
+			if (type == "Broccoli") {myChar = 'q';}
+			if (type == "Carrot") {myChar = 'c';}
+			if (type == "Bread") {myChar = 'b';}
+			if (type == "PotSticker") {myChar = 'p';}
+			if (type == "Meat") {myChar = 's';}
+			if (type == "TriangleMeat") {myChar = 't';}
+			float norm = 0.50;
+			int x_0 = col/2;
+			int y_0 = row/2;
+
+			if (x < x_0 && y < y_0) // Quadrant 1
+				{
+					xCoord = (x - x_0)*norm;
+					yCoord = (y_0 - y)*norm;
+				}
+			else if (x > x_0 && y < y_0) // Quadrant 2
+				{
+					xCoord = (x - x_0)*norm;
+					yCoord = (y_0 - y)*norm;
+				}
+			else if (x < x_0 && y > y_0) // Quadrant 3
+				{
+					xCoord = (x - x_0)*norm; 
+					yCoord = (y_0 - y)*norm;
+				}
+			else if (x > x_0 && y > y_0) // Quadrant 4
+				{
+					xCoord = (x - x_0)*norm;
+					yCoord = (y_0 - y)*norm;
+				}
+			else if (x == x_0 && y == y_0)
+				{
+					xCoord = 0;
+					yCoord = 0;
+				}
+			float scale = frame.rows*frame.cols;
+			Area = Area/(scale-scale/6); // This will be a percentage relative to the area of the pot
+			Area = (int)100*Area;
+			if (Area < 1) Area = 1;
+			//Area = (int)(Area*100)/100.0F;
+
+			//if (xCoord >= -75 && yCoord >= -75 && xCoord <= 75 && yCoord <= 75)
+			//{
+				if(xCoord >= 66) xCoord = 66;
+				if(xCoord <= -66) xCoord = -66;
+				if(yCoord >= 66) yCoord = 66;
+				if(yCoord <= -66) yCoord = 66;
+				oneMessage = type  + " " + "\n" + " " + intToString(xCoord) + ", " + intToString(yCoord) + ", " + intToString(Area);
+			//string message = intToString(theFood.getXPos())+ ", " + intToString(theFood.getYPos());
+			//char const* pchar = message.at(i).c_str();
+			
+			//}
+
+					return oneMessage;
+}
 
 
 vector<string> relayCoords(vector<Food> theFood, Mat& frame){
@@ -669,25 +742,24 @@ void setUpSerial()
 //==================== Serial Initialization =============================================================
 
 
-	serialPort = open(portName, O_RDWR | O_NOCTTY | O_NDELAY);
+	serialPort = open(portName, O_RDWR | O_NOCTTY);
 	tcgetattr(serialPort, &portOptions);
 	tcflush(serialPort, TCIOFLUSH);
-	cfsetispeed(&portOptions, B115200);
-	cfsetospeed(&portOptions, B115200);
+	cfsetispeed(&portOptions, B9600);
+	cfsetospeed(&portOptions, B9600);
  	// c_cflag contains a few important things- CLOCAL and CREAD, to prevent
  	//   this program from "owning" the port and to enable receipt of data.
  	//   Also, it holds the settings for number of data bits, parity, stop bits,
 	//   and hardware flow control. 
-	portOptions.c_cflag |= CLOCAL;
-	portOptions.c_cflag |= CREAD;
-	// Set up the frame information.
-	portOptions.c_cflag &= ~CSIZE; // clear frame size info
-	portOptions.c_cflag |= CS8;    // 8 bit frames
-	portOptions.c_cflag &= ~PARENB;// no parity
-	portOptions.c_cflag &= ~CSTOPB;// one stop bit
+	portOptions.c_cflag |= CLOCAL | CREAD | ~CSIZE | CS8 | ~PARENB | ~CSTOPB;
+	portOptions.c_iflag = IGNPAR | ICRNL | BRKINT;
+	portOptions.c_oflag = 0;
+	portOptions.c_cc[VTIME]    = 0;   /* inter-character timer unused */
+    portOptions.c_cc[VMIN]     = 1;   /* blocking read until 5 chars received */
 
  	tcsetattr(serialPort, TCSANOW, &portOptions);
   	tcflush(serialPort, TCIOFLUSH);
+
 
 
 //==================== End Serial Initialization ============================================================
@@ -825,6 +897,7 @@ bool checkIfFileOpen(fstream &file)
 
 void loadLocalHSV()
 {
+	cout << "Loading HSV values locally..." << endl;
 	for (int k = 0; k < LocalNames.size(); k++)
 	{
 		for (int j = 0; j < Names.size(); j++)
@@ -846,6 +919,7 @@ void loadLocalHSV()
 
 void storeNewFoods(fstream& file, int i)
 {
+	cout << "Storing New found foods into file... " << endl;
 	if(LocalHSVMins1[i] == Scalar(0,0,0))
 				{	
 					cout << "Make rectangle in center of food " << LocalNames[i] << " until it tracks, then hit the Q key" << endl;
@@ -861,7 +935,7 @@ void storeNewFoods(fstream& file, int i)
 						imshow("Calibration", thresholdImg);
 						//trackingObjectCalibration(thresholdImg, HSV, liveFeed);
 						int c = waitKey(30);
-						if (c == 1048689) break;
+						if (c == 'q') break;
 					}
 					LocalHSVMins1[i] = HSVMINS[HSVMINS.size()-1];
 					LocalHSVMaxs1[i] = HSVMAXS[HSVMAXS.size()-1];
@@ -880,8 +954,10 @@ void storeNewFoods(fstream& file, int i)
 						imshow("Calibration", thresholdImg);
 						//trackingObjectCalibration(thresholdImg, HSV, liveFeed);
 						int c = waitKey(30);
-						if (c == 1048689) break;
+						if (c == 'q') break;
 					}
+
+					cout << "Move food " << LocalNames[i] << " and make another rectangle until it tracks, then hit the Q key" << endl;
 
 					LocalHSVMins2[i] = HSVMINS[HSVMINS.size()-1];
 					LocalHSVMaxs2[i] = HSVMAXS[HSVMAXS.size()-1];
@@ -897,7 +973,7 @@ void storeNewFoods(fstream& file, int i)
 						imshow("Calibration", thresholdImg);
 						//trackingObjectCalibration(thresholdImg, HSV, liveFeed);
 						int c = waitKey(30);
-						if (c == 1048689) break;
+						if (c == 'q') break;
 					}
 
 					LocalHSVMins3[i] = HSVMINS[HSVMINS.size()-1];
@@ -936,6 +1012,7 @@ void storeNewFoods(fstream& file, int i)
 
 void setClassValues(vector<Food>& theFood, int index)
 {
+	cout << "Setting the values to our food class..." << endl;
 	theFood.at(index).setHSVmin1(LocalHSVMins1[index]);
 	theFood.at(index).setHSVmax1(LocalHSVMaxs1[index]);
 	theFood.at(index).setHSVmin2(LocalHSVMins2[index]);
@@ -946,6 +1023,8 @@ void setClassValues(vector<Food>& theFood, int index)
 	theFood.at(index).setType(LocalNames[index]);
 	//cout << "In setClassValues: ";
 	//cout << theFood.at(index).getHSVmin1() << ", " << theFood.at(index).getHSVmax1() << ", " << theFood.at(index).getType()<< endl;
+	cout << "Creating a 3-fold mask using 3 seperate calibrations then tracking..." << endl;
+
 }
 
 void createMasks(vector<Food>& theFood, int index)
@@ -997,6 +1076,23 @@ void getInfoFromUser()
 	}
 }
 
+string convertBufToString(char buf[64])
+{
+	res = read(serialPort,buf,sizeof(buf) - 1);
+	buf[res] = '\0';
+	string tempString = string(buf);
+	return tempString;
+}
+
+string listOfStrings(int ingredientNum)
+{
+	string tempString;
+	for (int i = 0; i < ingredientNum; i++)
+	{
+		tempString += LocalNames[i] + " ";
+	}
+	return tempString;
+}
 
 void shapeCount(vector<string> shapes, int& circleCount, int& triCount, int& rectCount, int& pentaCount)
 {

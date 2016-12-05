@@ -66,13 +66,8 @@ int main(int argc, char* argv[])
 			while (i < Foodies.size())
 			{
 				loadLocalHSV();
-				//cout << "after loadLocalHSV";
-				//cout << LocalHSVMins[i];
-				//cout << LocalBGRVals[i] << endl;
-				//cout << LocalHSVMins.size() << LocalBGRVals.size();
 				storeNewFoods(foodValues, i);
 				setClassValues(Foodies, i);
-				//createMasks(Foodies, i);
 				i++;
 			}
 		}
@@ -83,27 +78,37 @@ int main(int argc, char* argv[])
 			for (int i = 0; i < Foodies.size(); i++)
 			{
 				recreateMasks(Foodies, i);
-				//cout << "In counttest loop: ";
-				//cout << Foodies.at(i).getHSVmin1() << ", " << Foodies.at(i).getHSVmax1() << endl;
-				//cout << "Iterration: " << i << endl;
 				waitKey(10);
 
 			}
 		}
 		trackingObjects(Foodies, ThresholdImgs1, HSV, liveFeed);
-		//inRange(HSV,PotSticker.getHSVmin1(), PotSticker.getHSVmax1(),thresholdImg3);
-		//inRange(HSV,PotSticker.getHSVmin2(), PotSticker.getHSVmax2(),thresholdImg4);
-		//bitwise_or(thresholdImg3,thresholdImg4,thresholdImg9);
-		//morphOps(thresholdImg9); 	
-		//trackingObject(PotSticker, thresholdImg9, HSV, liveFeed);
-		//PotSticker.setBoarder();
-		//char const* PotStickerChar = relayCoords(Foodies, liveFeed);
-		char thisChar[64];
-		tcflush(serialPort, TCIOFLUSH);
-		read(serialPort, thisChar, 62);
 		vector<string> messages = relayCoords(Foodies, liveFeed);
-		//cout << messages; 	
-		if(*thisChar == '>')
+		if (counttest % 40 == 0)
+		{
+			string tempString = convertBufToString(buf);
+			if (tempString.size() != 0) cout << "String received from Serial...: " << tempString << endl;
+			int FoodNum = 10000;
+			if(tempString == "numFood") STOP_NUM = false;
+			else if(tempString == ">") STOP = false;
+			else if(tempString == "whichStrings") STOP_STRINGS = false;
+			else
+			{
+				for (int i = 0; i < LocalNames.size(); i++)
+				{
+					FoodNum = (tempString == LocalNames[i]) ? i : 10000;
+				}
+				if (FoodNum != 10000) // 10000 arbitrary large num that theres no way we would cook this much foods
+				{
+					//cout << "Looking for food..: " << Foodies.at(FoodNum) << endl;
+					string tempString2 = relayCoord(Foodies.at(FoodNum), liveFeed);
+					char const* myChar = tempString2.c_str();
+					write(serialPort, myChar, 62);
+					cout << "Sending robot..: " << myChar << endl;
+				}
+			}
+		}
+        while (STOP==false)
 		{
 			for (int i = 0; i < messages.size(); i++)
 			{
@@ -111,11 +116,26 @@ int main(int argc, char* argv[])
 				write(serialPort, myChar, 62);
 				cout << "Sending robot..: " << myChar << endl;
 			}
+			if (tcdrain(serialPort) != 0) perror("tcdrain() error");
+			STOP = true;
 		}
-
+		while (STOP_NUM == false)
+		{
+			char const* numFood = intToString(ingredientNum).c_str();
+			write(serialPort, numFood, 62);
+			cout << "Sending robot numFood... " << numFood << endl;
+			STOP_NUM = true;
+		}
+		while (STOP_STRINGS == false)
+		{
+			char const* whichString = listOfStrings(ingredientNum).c_str();
+			write(serialPort, whichString, 62);
+			cout << "Sending robot strings... " << whichString << endl;
+			STOP_STRINGS = true;
+		}
 		counttest += 1;
 		imshow(windowOriginal1,liveFeed);
-		int key = waitKey(50);
+		int key = waitKey(5);
 		if (key == 27) break;
 	}
 	return 0;
