@@ -81,6 +81,7 @@ Test_EXTERNAL_OBJECTS =
 
 Test: CMakeFiles/Test.dir/foodTrackingAdditional.cpp.o
 Test: CMakeFiles/Test.dir/build.make
+Test: /usr/lib/x86_64-linux-gnu/libboost_regex.so
 Test: /usr/local/lib/libopencv_videostab.so.3.1.0
 Test: /usr/local/lib/libopencv_videoio.so.3.1.0
 Test: /usr/local/lib/libopencv_video.so.3.1.0

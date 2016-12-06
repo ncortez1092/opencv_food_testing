@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
 project( Test )
 find_package( OpenCV REQUIRED )
+find_package( Boost REQUIRED COMPONENTS program_options regex )
+include_directories( ${Boost_INCLUDE_DIRS} )
 add_executable( Test foodTrackingAdditional.cpp )
-target_link_libraries( Test ${OpenCV_LIBS} )
+target_link_libraries( Test ${BOOST_PROGRAM_OPTIONS_LIBRARY} ${Boost_REGEX_LIBRARY} ${OpenCV_LIBS} )
 

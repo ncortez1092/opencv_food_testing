@@ -16,6 +16,8 @@
 using namespace std;
 using namespace cv;
 
+#define DECAY 0.05
+
 
 
 class Food
@@ -133,8 +135,8 @@ const int FRAME_WIDTH = 640;
 const int FRAME_HEIGHT = 480;
 
 // Other obvious declarations
-const int MAX_NUM_OBJECTS = 50; // Max number of objects
-const int MIN_OBJECT_AREA = 10*10; // Min area of an object we will bother detecting
+const int MAX_NUM_OBJECTS = 5; // Max number of objects
+const int MIN_OBJECT_AREA = 15*15; // Min area of an object we will bother detecting
 const int MAX_OBJECT_AREA = (FRAME_HEIGHT*FRAME_WIDTH) / 1.5; // Max area of an object we will detect
 
 // Window names for our program
@@ -185,17 +187,17 @@ bool checkIfFileOpen(fstream&);
 
 
 
-void makeCropAndCircle(int cropHeight = 280, int cropWidth = 210, int cropX = 185, int cropY = 60)
+void makeCropAndCircle(int radius=85, Point center= Point(330, 196))
 {
 
 		capture.read(temp);
 		cv::Mat mask = cv::Mat::zeros( temp.rows, temp.cols, CV_8UC1 );
-		Point center = Point(330, 196);
-		float radius = 85;
-		cropX = 330 - radius;
-		cropY = 196 - radius;
-		cropHeight = 2*radius;
-		cropWidth = 2*radius;
+		center = Point(330, 196);
+		radius = 85;
+		int cropX = 330 - radius;
+		int cropY = 196 - radius;
+		int cropHeight = 2*radius;
+		int cropWidth = 2*radius;
 		Rect myCropROI(cropX, cropY , cropHeight , cropWidth);
 		//VideoWriter video("out.avi",CV_FOURCC('X','V','I','D'),30,Size(cropWidth,cropHeight),true);
 		//video.open("out.avi",CV_FOURCC('X','V','I','D'),30,Size(cropWidth,cropHeight),true);
@@ -682,7 +684,7 @@ for (int i = 0; i < theFood.size(); i++)
 	{
 		Mat tempImg;
 		thresholdImg.at(i).copyTo(tempImg);
-		//imshow("In TrackingObjects", tempImg);
+		imshow("In TrackingObjects", tempImg);
 		//these two vectors needed for output of findContours
 		vector< vector<Point> > contours;
 		vector<Vec4i> hierarchy;
@@ -840,8 +842,8 @@ void recordHSV(Mat frame, Mat HSVCalibration)
 		//if the mouse is held down, we will draw the click and dragged rectangle to the screen
 		rectangle(frame, initialClickPoint, cv::Point(endClickPoint.x, endClickPoint.y), cv::Scalar(100, 125, 92), .5 , 4, 0);
 	}
-	HSVMINS.push_back(Scalar(Hmin, Smin, Vmin));
-	HSVMAXS.push_back(Scalar(Hmax, Smax, Vmax));
+	HSVMINS.push_back(Scalar(int(Hmin + DECAY*Hmin), int(Smin + DECAY*Smin), int(Vmin + DECAY*Vmin)));
+	HSVMAXS.push_back(Scalar(int(Hmax - DECAY*Hmax), int(Smax - DECAY*Smax), int(Vmax - DECAY*Vmax)));
 	BGRVALS.push_back(Scalar(Bavg,Gavg,Ravg));
 
 }
@@ -939,7 +941,6 @@ void storeNewFoods(fstream& file, int i)
 					}
 					LocalHSVMins1[i] = HSVMINS[HSVMINS.size()-1];
 					LocalHSVMaxs1[i] = HSVMAXS[HSVMAXS.size()-1];
-					LocalBGRVals[i] = BGRVALS[BGRVALS.size()-1];
 
 					cout << "Move food " << LocalNames[i] << " and make another rectangle until it tracks, then hit the Q key" << endl;
 					now = clock();
@@ -975,9 +976,11 @@ void storeNewFoods(fstream& file, int i)
 						int c = waitKey(30);
 						if (c == 'q') break;
 					}
-
+					destroyWindow("Calibration");
 					LocalHSVMins3[i] = HSVMINS[HSVMINS.size()-1];
 					LocalHSVMaxs3[i] = HSVMAXS[HSVMAXS.size()-1];
+					LocalBGRVals[i] = BGRVALS[BGRVALS.size()-1];
+
 
 					file.open("foodValues.txt", ios::in | ios::app | ios::out);
 					if(checkIfFileOpen(file))return;
@@ -1113,13 +1116,16 @@ vector<string> shapeDetection()
 		vector<Vec4i>hierarchy;
 		vector<string> Types;
 		string shapeObj;
+		makeCropAndCircle(10);
 		cvtColor(liveFeed, gray, COLOR_BGR2GRAY);
-	 	morphOps(gray);
+	 	//morphOps(gray);
+	 	//morphOps(gray);
 	 	threshold(gray, threshShape, 55, 255, THRESH_BINARY);
+	 	morphOps(threshShape);
 	 	imshow("threshShape", threshShape);
-	 	//morphOps(threshShape);
+
 	 	findContours(threshShape, contours, hierarchy, CV_RETR_CCOMP,CV_CHAIN_APPROX_SIMPLE);
-	 	if (hierarchy.size() > 0 && hierarchy.size() < MAX_NUM_OBJECTS)
+	 	if (hierarchy.size() > 0 && hierarchy.size() < 50)
 	 	{
 		 	for(int index = 0; index >= 0; index = hierarchy[index][0]){
 		 		//for(size_t j = 0; j < contours.size(); j++)
@@ -1130,7 +1136,7 @@ vector<string> shapeDetection()
 		 			{
 		 				int cX = (int)(moment.m10/area);
 		 				int cY = (int)(moment.m01/area);
-		 				shapeObj = SD.detection(contours);
+		 				shapeObj = SD.detection(contours); 	
 		 				Types.push_back(shapeObj);
 		 				//drawContours(liveFeed, contours[index], (cX, cY), Scalar(255,255,255), 1);
 		 				putText(liveFeed, shapeObj, Point(cX,cY), 1, 1,Scalar(255,255,255), 1);
